@@ -217,21 +217,47 @@
   body.compact .session-summary { display:none; }
   body.compact .container { padding-bottom:1.2rem; }
 
+  /* Mini mode — only phase label + timer */
+  body.mini .settings { display:none; }
+  body.mini .objective-display { display:none; }
+  body.mini .reflection-panel { display:none !important; }
+  body.mini .done-message { display:none; }
+  body.mini .session-summary { display:none; }
+  body.mini .progress-dots { display:none; }
+  body.mini .counter { display:none; }
+  body.mini .warning-label { display:none; }
+  body.mini .controls { display:none; }
+  body.mini .toggles-row { display:none; }
+  body.mini .signature { display:none; }
+  body.mini .drag-bar { height:0.6rem; }
+  body.mini .window-controls { top:-0.2rem; }
+  body.mini .container { padding:0 0.8rem 0.3rem; }
+  body.mini .phase-label { margin-top:0.8rem; margin-bottom:0.1rem; font-size:0.5rem; }
+  body.mini .timer { margin-bottom:0; font-size:2.2rem; }
+
+  /* Mini mode button — only visible during active work session */
+  button.mini-btn { display:none !important; font-size:0.45rem; }
+  body.compact button.mini-btn { display:flex !important; }
+  body.mini button.mini-btn { display:flex !important; }
+
   /* Reflection mode — more bottom breathing room */
   .reflection-panel.visible ~ .controls { margin-bottom:0.6rem; }
 
   /* Drag region + window controls */
   .drag-bar { height:1.6rem; width:100%; position:relative; }
   .window-controls { display:flex; justify-content:flex-end; gap:0.2rem; position:absolute; right:0; top:0; }
-  .win-btn { background:none; border:none; cursor:pointer; font-size:1rem; line-height:1; width:1.5rem; height:1.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--green); opacity:0.5; transition:opacity 0.15s, background 0.15s; padding:0; font-family:'M PLUS Rounded 1c',sans-serif; }
+  .win-btn { background:none; border:none; cursor:pointer; font-size:1rem; line-height:1; width:1.5rem; height:1.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--green); opacity:0.5; transition:opacity 0.15s, background 0.15s, color 0.15s; padding:0; font-family:'M PLUS Rounded 1c',sans-serif; position:relative; z-index:100; }
   .win-btn:hover { opacity:0.8; background:var(--surface); }
   .close-btn:hover { opacity:0.9; color:#c0392b; }
+  body.work .win-btn, body.compact .win-btn, body.mini .win-btn { color:#fff; }
+  body.work .close-btn:hover, body.compact .close-btn:hover, body.mini .close-btn:hover { color:#ff6b6b; }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="drag-bar">
     <div class="window-controls">
+      <button class="win-btn mini-btn" onclick="toggleMiniMode()" title="Mini mode">&#x2022;</button>
       <button class="win-btn minimize-btn" onclick="hideToMenuBar()" title="Minimize to menu bar">&#x2013;</button>
       <button class="win-btn close-btn" onclick="closeApp()" title="Close">&times;</button>
     </div>
@@ -302,9 +328,13 @@
   function panelMsg(action){
     try{window.webkit.messageHandlers.panelControl.postMessage({action:action});}catch(e){}
   }
-  function enterCompact(){document.body.classList.add('compact');panelMsg('sessionStart');}
-  function expandFull(){document.body.classList.remove('compact');panelMsg('sessionExpand');}
-  function exitCompact(){document.body.classList.remove('compact');panelMsg('sessionStop');}
+  let miniMode=false;
+  function enterCompact(){document.body.classList.add('compact');document.body.classList.remove('mini');miniMode=false;panelMsg('sessionStart');}
+  function expandFull(){document.body.classList.remove('compact');document.body.classList.remove('mini');miniMode=false;panelMsg('sessionExpand');}
+  function exitCompact(){document.body.classList.remove('compact');document.body.classList.remove('mini');miniMode=false;panelMsg('sessionStop');}
+  function enterMini(){miniMode=true;document.body.classList.remove('compact');document.body.classList.add('mini');panelMsg('sessionMini');}
+  function exitMini(){miniMode=false;document.body.classList.remove('mini');document.body.classList.add('compact');panelMsg('sessionStart');}
+  function toggleMiniMode(){if(miniMode)exitMini();else enterMini();}
   function hideToMenuBar(){panelMsg('panelHide');}
   function closeApp(){panelMsg('panelClose');}
 

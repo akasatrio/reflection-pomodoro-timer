@@ -17,6 +17,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
     let reflectionHeight: CGFloat = 580
     let compactWidth: CGFloat = 280
     let compactHeight: CGFloat = 310
+    let miniWidth: CGFloat = 150
+    let miniHeight: CGFloat = 100
     let dragBarHeight: CGFloat = 28
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -71,8 +73,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
         webView.setValue(false, forKey: "drawsBackground")
         contentView.addSubview(webView)
 
-        // Transparent drag bar overlaid on top of webview
-        let dragBar = DragView(frame: NSRect(x: 0, y: contentView.bounds.height - dragBarHeight, width: contentView.bounds.width, height: dragBarHeight))
+        // Transparent drag bar overlaid on top of webview (leave right side for buttons)
+        let buttonAreaWidth: CGFloat = 80
+        let dragBar = DragView(frame: NSRect(x: 0, y: contentView.bounds.height - dragBarHeight, width: contentView.bounds.width - buttonAreaWidth, height: dragBarHeight))
         dragBar.autoresizingMask = [.width, .minYMargin]
         contentView.addSubview(dragBar)
 
@@ -155,6 +158,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
             let oldHeight = panel.frame.height
             let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - reflectionHeight))
             panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: reflectionWidth, height: reflectionHeight)), display: true, animate: true)
+
+        } else if action == "sessionMini" {
+            // Stay floating, shrink to mini size
+            let origin = panel.frame.origin
+            let oldHeight = panel.frame.height
+            let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - miniHeight))
+            panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: miniWidth, height: miniHeight)), display: true, animate: true)
 
         } else if action == "sessionStop" {
             panel.isFloatingPanel = false
