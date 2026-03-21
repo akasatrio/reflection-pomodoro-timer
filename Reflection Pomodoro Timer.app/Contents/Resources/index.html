@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reflection Pomodoro Timer</title>
+<title>Pomodoro Timer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -47,6 +47,8 @@
     font-size:0.48rem; font-weight:700; letter-spacing:0.16em;
     text-transform:uppercase; opacity:0.35; margin-bottom:0.4rem;
   }
+  .reset-btn { cursor:pointer; opacity:0.6; font-size:0.6rem; vertical-align:middle; transition:opacity 0.15s; }
+  .reset-btn:hover { opacity:1; }
   .settings-grid { display:flex; justify-content:center; gap:0; margin-bottom:0.4rem; }
   .setting-field {
     display:flex; flex-direction:column; align-items:center; gap:0.15rem;
@@ -90,8 +92,8 @@
     text-transform:uppercase; opacity:0.3; margin-bottom:0.8rem; min-height:0.5rem;
   }
   .phase-label {
-    font-size:0.5rem; font-weight:700; letter-spacing:0.22em;
-    text-transform:uppercase; opacity:0.4; margin-bottom:0.5rem; margin-top:-1rem;
+    font-size:0.9rem; font-weight:700; letter-spacing:0.12em;
+    text-transform:uppercase; opacity:0.5; margin-bottom:0.5rem; margin-top:-1rem;
   }
   .timer {
     font-family:'M PLUS Rounded 1c', sans-serif; font-size:4rem; font-weight:300; letter-spacing:0.06em;
@@ -114,7 +116,7 @@
   .dot.filled { opacity:0.65; transform:scale(1.2); }
 
   .counter {
-    font-size:0.5rem; font-weight:500; opacity:0.3; margin-bottom:1.2rem;
+    font-size:0.6rem; font-weight:600; opacity:0.35; margin-bottom:1.2rem;
   }
 
   /* Controls */
@@ -236,16 +238,16 @@
   </div>
   <!-- Settings -->
   <div class="settings" id="settingsPanel">
-    <div class="section-title">Session</div>
+    <div class="section-title">Session <span class="reset-btn" onclick="resetSettings()" title="Reset to defaults">&#x21bb;</span></div>
     <div class="settings-grid">
       <div class="setting-field"><label>Work</label><input type="number" id="inputWork" value="25" min="1" max="90"></div>
-      <div class="setting-field"><label>Short</label><input type="number" id="inputShort" value="5" min="1" max="30"></div>
+      <div class="setting-field"><label>Break</label><input type="number" id="inputShort" value="5" min="1" max="30"></div>
       <div class="setting-field"><label>Long</label><input type="number" id="inputLong" value="15" min="0" max="60"></div>
       <div class="setting-field"><label>Sets</label><input type="number" id="inputTotal" value="4" min="1" max="20"></div>
       <div class="setting-field"><label>Long @</label><input type="number" id="inputLongEvery" value="4" min="1" max="20"></div>
     </div>
     <div class="objective-row">
-      <input type="text" id="inputObjective" placeholder="What are you working on?">
+      <input type="text" id="inputObjective" placeholder="What are you working on?" onkeydown="if(event.key==='Enter')applySettings()">
       <button class="apply-btn" onclick="applySettings()">Apply</button>
     </div>
   </div>
@@ -387,15 +389,23 @@
     warningLabel.textContent='';noteSavedBadge.classList.remove('visible');
     renderControls('Start');buildDots();updateTitle();saveSettings();
   }
-  function saveSettings(){try{localStorage.setItem('pomodoro_settings',JSON.stringify({work:WORK,short:SHORT,long:LONG,total:TOTAL,longEvery:LONG_EVERY,objective:document.getElementById('inputObjective').value.trim()}));}catch(e){}}
-  function loadSettings(){try{var s=JSON.parse(localStorage.getItem('pomodoro_settings'));if(!s)return;WORK=s.work||25*60;SHORT=s.short||5*60;LONG=(typeof s.long==='number')?s.long:15*60;TOTAL=s.total||4;LONG_EVERY=s.longEvery||4;document.getElementById('inputWork').value=Math.round(WORK/60);document.getElementById('inputShort').value=Math.round(SHORT/60);document.getElementById('inputLong').value=Math.round(LONG/60);document.getElementById('inputTotal').value=TOTAL;document.getElementById('inputLongEvery').value=LONG_EVERY;if(s.objective){document.getElementById('inputObjective').value=s.objective;objDisp.textContent=s.objective;}timeLeft=WORK;display.textContent=fmt(WORK);counterEl.textContent='Pomodoro 1 of '+TOTAL;}catch(e){}}
+  function resetSettings(){
+    document.getElementById('inputWork').value=25;
+    document.getElementById('inputShort').value=5;
+    document.getElementById('inputLong').value=15;
+    document.getElementById('inputTotal').value=4;
+    document.getElementById('inputLongEvery').value=4;
+    applySettings();
+  }
+  function saveSettings(){try{localStorage.setItem('pomodoro_settings',JSON.stringify({work:WORK,short:SHORT,long:LONG,total:TOTAL,longEvery:LONG_EVERY}));}catch(e){}}
+  function loadSettings(){try{var s=JSON.parse(localStorage.getItem('pomodoro_settings'));if(!s)return;WORK=s.work||25*60;SHORT=s.short||5*60;LONG=(typeof s.long==='number')?s.long:15*60;TOTAL=s.total||4;LONG_EVERY=s.longEvery||4;document.getElementById('inputWork').value=Math.round(WORK/60);document.getElementById('inputShort').value=Math.round(SHORT/60);document.getElementById('inputLong').value=Math.round(LONG/60);document.getElementById('inputTotal').value=TOTAL;document.getElementById('inputLongEvery').value=LONG_EVERY;timeLeft=WORK;display.textContent=fmt(WORK);counterEl.textContent='Pomodoro 1 of '+TOTAL;}catch(e){}}
 
   function toggleStart(){
     if(phase==='idle'){startWork();return;}if(phase==='done')return;
     if(running){clearInterval(interval);running=false;controls.querySelector('.primary').textContent='Resume';}
     else{running=true;controls.querySelector('.primary').textContent='Pause';interval=setInterval(tick,1000);}
   }
-  function startWork(){
+  function startWork(skipSound){
     phase='work';timeLeft=WORK;running=true;warningShown=false;reflectionShown=false;noteSubmittedThisPomodoro=false;
     document.body.className='work';pLabel.textContent='Work';
     counterEl.textContent='Pomodoro '+(count+1)+' of '+TOTAL;display.textContent=fmt(timeLeft);
@@ -403,7 +413,7 @@
     reflectionPanel.classList.remove('visible');noteSavedBadge.classList.remove('visible');
     reflectionTitle.value='';reflectionText.value='';settingsPanel.style.display='';
     renderControls('Pause');clearInterval(interval);interval=setInterval(tick,1000);
-    updateDots();updateTitle();playTransitionSound();requestNotifications();
+    updateDots();updateTitle();if(!skipSound)playTransitionSound();requestNotifications();
     enterCompact();
   }
   function startBreak(isLong){
@@ -460,10 +470,12 @@
       if(count>=TOTAL)showDone();
       else{var isLong=(LONG>0)&&(count%LONG_EVERY===0);startBreak(isLong);}
     }else{
-      playTransitionSound();notify('Break Over','Ready for the next pomodoro?');
-      phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';
+      notify('Break Over','Ready for the next pomodoro?');
+      var autoStart=localStorage.getItem('autoStartAfterBreak')==='1';
+      if(autoStart){playTransitionSound();startWork(true);}
+      else{playTransitionSound();phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';
       counterEl.textContent='Pomodoro '+(count+1)+' of '+TOTAL;
-      display.textContent=fmt(WORK);renderControls('Start');updateTitle();
+      display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
     }
   }
   function resetBlock(){
