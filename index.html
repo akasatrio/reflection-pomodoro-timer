@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro Timer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --beige: #eae8e3; --green: #0c3b2e; --brown: #1f140f; --beige-light: #f5f0eb;
+    --surface: rgba(0,0,0,0.025); --border: rgba(31,20,15,0.12);
+    --border-light: rgba(31,20,15,0.06); --btn-bg: var(--green); --btn-fg: var(--beige);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding-top: 0.8rem;
+    transition: background-color 0.8s, color 0.8s;
+    background-color: rgba(234,232,227,0.88); color: var(--brown);
+  }
+  body.work {
+    background-color: rgba(12,59,46,0.88); color: var(--beige);
+    --surface: rgba(255,255,255,0.05); --border: rgba(234,232,227,0.15);
+    --border-light: rgba(234,232,227,0.08); --btn-bg: var(--beige); --btn-fg: var(--green);
+  }
+  body.break {
+    background-color: rgba(245,240,235,0.88); color: var(--green);
+    --surface: rgba(12,59,46,0.03); --border: rgba(12,59,46,0.12);
+    --border-light: rgba(12,59,46,0.06); --btn-bg: var(--green); --btn-fg: var(--beige-light);
+  }
+  body.done {
+    background-color: rgba(31,20,15,0.88); color: var(--beige);
+    --surface: rgba(255,255,255,0.05); --border: rgba(234,232,227,0.15);
+    --border-light: rgba(234,232,227,0.08); --btn-bg: var(--beige); --btn-fg: var(--brown);
+  }
+
+  .container { text-align:center; padding:0.3rem 1.2rem; width:100%; }
+
+  /* Settings */
+  .settings {
+    border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
+    padding: 0.5rem 0; margin-bottom: 1.2rem;
+  }
+  .section-title {
+    font-size:0.48rem; font-weight:700; letter-spacing:0.16em;
+    text-transform:uppercase; opacity:0.35; margin-bottom:0.4rem;
+  }
+  .settings-grid { display:flex; justify-content:center; gap:0; margin-bottom:0.4rem; }
+  .setting-field {
+    display:flex; flex-direction:column; align-items:center; gap:0.15rem;
+    flex:1; padding:0 0.2rem; position:relative;
+  }
+  .setting-field + .setting-field::before {
+    content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
+    height:55%; width:1px; background:var(--border-light);
+  }
+  .setting-field label {
+    font-size:0.44rem; font-weight:600; letter-spacing:0.08em;
+    text-transform:uppercase; opacity:0.3;
+  }
+  .setting-field input[type="number"] {
+    width:34px; text-align:center; background:transparent; border:none;
+    border-bottom:1px solid var(--border); color:inherit; font-family:inherit;
+    font-size:0.78rem; font-weight:500; padding:0.1rem 0; outline:none;
+    -moz-appearance:textfield;
+  }
+  .setting-field input::-webkit-inner-spin-button,
+  .setting-field input::-webkit-outer-spin-button { -webkit-appearance:none; }
+  .setting-field input:focus { border-bottom-color:currentColor; }
+
+  .objective-row { display:flex; border:1px solid var(--border-light); }
+  .objective-row input[type="text"] {
+    flex:1; background:transparent; border:none; color:inherit;
+    font-family:inherit; font-size:0.64rem; padding:0.35rem 0.5rem; outline:none;
+  }
+  .objective-row input::placeholder { opacity:0.25; }
+  .apply-btn {
+    background:var(--surface); border:none; border-left:1px solid var(--border-light);
+    color:inherit; font-family:inherit; font-size:0.48rem; font-weight:700;
+    letter-spacing:0.12em; text-transform:uppercase; padding:0.35rem 0.6rem;
+    cursor:pointer;
+  }
+  .apply-btn:hover { background:var(--border-light); }
+
+  /* Timer */
+  .objective-display {
+    font-size:0.5rem; font-weight:600; letter-spacing:0.12em;
+    text-transform:uppercase; opacity:0.3; margin-bottom:0.8rem; min-height:0.5rem;
+  }
+  .phase-label {
+    font-size:0.5rem; font-weight:700; letter-spacing:0.22em;
+    text-transform:uppercase; opacity:0.4; margin-bottom:0.5rem;
+  }
+  .timer {
+    font-family:'M PLUS Rounded 1c', sans-serif; font-size:4rem; font-weight:300; letter-spacing:0.06em;
+    line-height:1; margin-bottom:0.6rem; font-variant-numeric:tabular-nums;
+  }
+  .timer.pulse { animation: pulse 0.6s ease 3; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .warning-label {
+    font-size:0.48rem; font-weight:600; letter-spacing:0.1em;
+    text-transform:uppercase; opacity:0; min-height:0.6rem; margin-bottom:0.4rem; transition:opacity 0.5s;
+  }
+  .warning-label.visible { opacity:0.45; }
+
+  .progress-dots { display:flex; justify-content:center; gap:0.3rem; margin-bottom:0.5rem; }
+  .dot {
+    width:5px; height:5px; border-radius:50%; background:currentColor; opacity:0.12;
+    transition: opacity 0.5s, transform 0.4s;
+  }
+  .dot.filled { opacity:0.65; transform:scale(1.2); }
+
+  .counter {
+    font-size:0.5rem; font-weight:500; opacity:0.3; margin-bottom:1.2rem;
+  }
+
+  /* Controls */
+  .controls { display:flex; gap:0; justify-content:center; margin-top:0.8rem; }
+  button.primary {
+    border:none; padding:0.5rem 1.3rem; font-size:0.58rem; font-weight:700;
+    letter-spacing:0.14em; text-transform:uppercase; cursor:pointer;
+    font-family:inherit; background:var(--btn-bg); color:var(--btn-fg);
+    transition: all 0.3s; position:relative; overflow:hidden;
+  }
+  button.primary::after {
+    content:''; position:absolute; inset:0; background:currentColor; opacity:0; transition:opacity 0.3s;
+  }
+  button.primary:hover::after { opacity:0.06; }
+  button.primary:active { transform:scale(0.98); }
+  button.secondary {
+    background:transparent; border:1px solid var(--border); padding:0.5rem 0.8rem;
+    font-size:0.58rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
+    cursor:pointer; font-family:inherit; opacity:0.35; color:inherit;
+    transition: all 0.3s; margin-left:-1px;
+  }
+  button.secondary:hover { opacity:0.6; }
+
+  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.8rem; padding-bottom:0.8rem; }
+  .toggles-row button {
+    background:none; border:none; color:inherit; font-family:inherit;
+    font-size:0.44rem; font-weight:600; letter-spacing:0.12em;
+    text-transform:uppercase; opacity:0.25; cursor:pointer; padding:0.2rem 0.4rem;
+  }
+  .toggles-row button:hover { opacity:0.5; }
+  .toggles-row button.active { opacity:0.55; }
+
+  /* Reflection */
+  .reflection-panel { display:none; margin-top:1rem; animation: fadeIn 0.4s forwards; }
+  .reflection-panel.visible { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  .reflection-title-input {
+    width:100%; background:transparent; border:none;
+    border-bottom:1px solid var(--border-light); color:inherit;
+    font-family:inherit; font-size:0.68rem; font-weight:600;
+    padding:0.3rem 0.1rem; outline:none; margin-bottom:0.3rem;
+  }
+  .reflection-title-input:focus { border-bottom-color:currentColor; }
+  .reflection-title-input::placeholder { opacity:0.2; font-weight:400; }
+
+  .reflection-panel textarea {
+    width:100%; min-height:50px; background:var(--surface);
+    border:1px solid var(--border-light); color:inherit;
+    font-family:inherit; font-size:0.66rem; line-height:1.6;
+    padding:0.5rem 0.6rem; outline:none; resize:vertical; margin-bottom:0.4rem;
+  }
+  .reflection-panel textarea:focus { border-color:currentColor; }
+  .reflection-panel textarea::placeholder { opacity:0.2; }
+
+  .notes-actions { display:flex; gap:0; justify-content:center; }
+  .notes-status {
+    font-size:0.5rem; opacity:0; margin-top:0.3rem; transition:opacity 0.3s; min-height:0.5rem;
+  }
+  .notes-status.visible { opacity:0.4; }
+  .note-saved-badge {
+    display:none; font-size:0.44rem; font-weight:600; letter-spacing:0.12em;
+    text-transform:uppercase; opacity:0.3; margin-top:0.2rem;
+  }
+  .note-saved-badge.visible { display:block; }
+
+  /* Done / Summary */
+  .done-message {
+    display:none; font-size:0.8rem; font-weight:300; opacity:0.7;
+    line-height:1.7; margin-bottom:0.8rem;
+  }
+  .done-message.visible { display:block; }
+  .session-summary {
+    display:none; text-align:left;
+    border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light);
+    padding:0.6rem 0; margin-bottom:0.8rem; max-height:160px; overflow-y:auto;
+  }
+  .session-summary.visible { display:block; }
+  .session-summary .summary-item {
+    font-size:0.62rem; line-height:1.5; padding:0.4rem 0;
+    border-bottom:1px solid var(--border-light); opacity:0.65;
+  }
+  .session-summary .summary-item:last-child { border-bottom:none; }
+  .session-summary .summary-item strong {
+    font-weight:600; opacity:1; font-size:0.54rem;
+    letter-spacing:0.06em; text-transform:uppercase;
+  }
+
+  .session-summary::-webkit-scrollbar { width:2px; }
+  .session-summary::-webkit-scrollbar-track { background:transparent; }
+  .session-summary::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  /* Compact mode — hide settings, objective, reflection during active session */
+  body.compact .settings { display:none; }
+  body.compact .objective-display { display:none; }
+  body.compact .reflection-panel { display:none !important; }
+  body.compact .done-message { display:none; }
+  body.compact .session-summary { display:none; }
+  body.compact .container { padding-bottom:1.2rem; }
+
+  /* Reflection mode — more bottom breathing room */
+  .reflection-panel.visible ~ .controls { margin-bottom:0.6rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Settings -->
+  <div class="settings" id="settingsPanel">
+    <div class="section-title">Session</div>
+    <div class="settings-grid">
+      <div class="setting-field"><label>Work</label><input type="number" id="inputWork" value="25" min="1" max="90"></div>
+      <div class="setting-field"><label>Short</label><input type="number" id="inputShort" value="5" min="1" max="30"></div>
+      <div class="setting-field"><label>Long</label><input type="number" id="inputLong" value="15" min="0" max="60"></div>
+      <div class="setting-field"><label>Sets</label><input type="number" id="inputTotal" value="4" min="1" max="20"></div>
+      <div class="setting-field"><label>Long @</label><input type="number" id="inputLongEvery" value="4" min="1" max="20"></div>
+    </div>
+    <div class="objective-row">
+      <input type="text" id="inputObjective" placeholder="What are you working on?">
+      <button class="apply-btn" onclick="applySettings()">Apply</button>
+    </div>
+  </div>
+
+  <!-- Timer -->
+  <div class="objective-display" id="objectiveDisplay"></div>
+  <div class="phase-label" id="phaseLabel">Ready</div>
+  <div class="timer" id="timerDisplay">25:00</div>
+  <div class="warning-label" id="warningLabel"></div>
+  <div class="progress-dots" id="progressDots"></div>
+  <div class="counter" id="counter">Pomodoro 1 of 4</div>
+
+  <!-- Reflection -->
+  <div class="reflection-panel" id="reflectionPanel">
+    <div class="section-title">Reflect — what did you accomplish?</div>
+    <input type="text" id="reflectionTitle" class="reflection-title-input" placeholder="Note title…">
+    <textarea id="reflectionText" placeholder="Write a quick note…"></textarea>
+    <div class="notes-actions">
+      <button class="primary" onclick="submitReflection()">Save</button>
+      <button class="secondary" onclick="copyCurrentNote()">Copy</button>
+    </div>
+    <div class="notes-status" id="notesStatus"></div>
+    <div class="note-saved-badge" id="noteSavedBadge">Note saved</div>
+  </div>
+
+  <!-- Done -->
+  <div class="done-message" id="doneMsg">Session complete. Well done, Adhi.</div>
+  <div class="session-summary" id="sessionSummary">
+    <div class="section-title">Session Summary</div>
+    <div id="summaryContent"></div>
+  </div>
+
+  <div class="controls" id="controls">
+    <button class="primary" onclick="toggleStart()">Start</button>
+    <button class="secondary" onclick="resetBlock()">Reset</button>
+    <button class="secondary" onclick="skipPhase()">Skip</button>
+  </div>
+  <div class="toggles-row">
+    <button onclick="toggleMute()" id="muteBtn">Sound On</button>
+    <button onclick="toggleFunnyMode()" id="funnyBtn">Funny Mode</button>
+  </div>
+</div>
+
+<script>
+  let TOTAL=4, LONG_EVERY=4, WORK=25*60, SHORT=5*60, LONG=15*60;
+  let phase='idle', timeLeft=WORK, running=false, interval=null, count=0;
+  let sessionNotes=[], warningShown=false, reflectionShown=false, noteSubmittedThisPomodoro=false;
+  let muted=false, funnyMode=false;
+
+  // Bridge to Swift panel control
+  function panelMsg(action){
+    try{window.webkit.messageHandlers.panelControl.postMessage({action:action});}catch(e){}
+  }
+  function enterCompact(){document.body.classList.add('compact');panelMsg('sessionStart');}
+  function exitCompact(){document.body.classList.remove('compact');panelMsg('sessionStop');}
+
+  const display=document.getElementById('timerDisplay'),
+    pLabel=document.getElementById('phaseLabel'),
+    counterEl=document.getElementById('counter'),
+    doneMsg=document.getElementById('doneMsg'),
+    controls=document.getElementById('controls'),
+    objDisp=document.getElementById('objectiveDisplay'),
+    reflectionPanel=document.getElementById('reflectionPanel'),
+    reflectionTitle=document.getElementById('reflectionTitle'),
+    reflectionText=document.getElementById('reflectionText'),
+    notesStatus=document.getElementById('notesStatus'),
+    noteSavedBadge=document.getElementById('noteSavedBadge'),
+    warningLabel=document.getElementById('warningLabel'),
+    summaryEl=document.getElementById('sessionSummary'),
+    summaryContent=document.getElementById('summaryContent'),
+    settingsPanel=document.getElementById('settingsPanel'),
+    progressDots=document.getElementById('progressDots');
+
+  // Audio
+  let audioCtx=null;
+  function getAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+  function bellStrike(n,delay){
+    if(muted)return; delay=delay||0;
+    try{const ctx=getAudioCtx();for(let i=0;i<n;i++){const t=ctx.currentTime+delay+i*0.28;
+      var o1=ctx.createOscillator(),g1=ctx.createGain();o1.type='sine';o1.frequency.setValueAtTime(820,t);
+      o1.frequency.exponentialRampToValueAtTime(780,t+0.5);g1.gain.setValueAtTime(0.28,t);
+      g1.gain.exponentialRampToValueAtTime(0.001,t+0.7);o1.connect(g1);g1.connect(ctx.destination);o1.start(t);o1.stop(t+0.7);
+      var o2=ctx.createOscillator(),g2=ctx.createGain();o2.type='sine';o2.frequency.setValueAtTime(1640,t);
+      o2.frequency.exponentialRampToValueAtTime(1560,t+0.4);g2.gain.setValueAtTime(0.1,t);
+      g2.gain.exponentialRampToValueAtTime(0.001,t+0.5);o2.connect(g2);g2.connect(ctx.destination);o2.start(t);o2.stop(t+0.5);
+      var o3=ctx.createOscillator(),g3=ctx.createGain();o3.type='sine';o3.frequency.setValueAtTime(3280,t);
+      g3.gain.setValueAtTime(0.035,t);g3.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+      o3.connect(g3);g3.connect(ctx.destination);o3.start(t);o3.stop(t+0.3);
+    }}catch(e){}
+  }
+  function celebrationBells(){bellStrike(3,0);bellStrike(2,1.0);bellStrike(1,1.8);}
+
+  let funnyAudio=null;
+  function playGameBoySound(){
+    if(muted)return;
+    try{if(funnyAudio)funnyAudio.pause();funnyAudio=new Audio('sound effect/nintendo-game-boy-startup.mp3');funnyAudio.play();}catch(e){}
+  }
+  function playFunnySound(){
+    if(muted||!funnyMode)return;
+    // TODO: dedicated funny mode sound later
+    playGameBoySound();
+  }
+  function playWarningSound(){if(muted)return;playGameBoySound();}
+  function playSessionEndSound(){if(muted)return;playGameBoySound();}
+  function playTransitionSound(){if(muted)return;playGameBoySound();}
+
+  function requestNotifications(){if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();}
+  function notify(t,b){if('Notification'in window&&Notification.permission==='granted')new Notification(t,{body:b,silent:true});}
+
+  function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+  function formatDate(){var d=new Date(),m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();}
+  function formatTime(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+
+  function buildDots(){progressDots.innerHTML='';for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot';d.id='d'+i;if(i<count)d.classList.add('filled');progressDots.appendChild(d);}}
+  function updateDots(){for(var i=0;i<TOTAL;i++){var d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<count);}}
+  function updateTitle(){document.title=(phase==='idle'||phase==='done')?'Pomodoro Timer':fmt(timeLeft)+' — Pomodoro';}
+
+  function applySettings(){
+    if(running)return;exitCompact();
+    var w=parseInt(document.getElementById('inputWork').value)||25,
+      s=parseInt(document.getElementById('inputShort').value)||5,
+      l=parseInt(document.getElementById('inputLong').value);
+    if(isNaN(l))l=15;
+    var t=parseInt(document.getElementById('inputTotal').value)||4,
+      le=parseInt(document.getElementById('inputLongEvery').value)||4,
+      obj=document.getElementById('inputObjective').value.trim();
+    WORK=w*60;SHORT=s*60;LONG=l*60;TOTAL=Math.max(1,Math.min(20,t));LONG_EVERY=Math.max(1,Math.min(20,le));
+    document.getElementById('inputTotal').value=TOTAL;document.getElementById('inputLongEvery').value=LONG_EVERY;
+    objDisp.textContent=obj;count=0;phase='idle';timeLeft=WORK;running=false;
+    sessionNotes=[];reflectionShown=false;noteSubmittedThisPomodoro=false;
+    document.body.className='';pLabel.textContent='Ready';
+    counterEl.textContent='Pomodoro 1 of '+TOTAL;display.textContent=fmt(WORK);
+    doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
+    reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');
+    warningLabel.textContent='';noteSavedBadge.classList.remove('visible');
+    renderControls('Start');buildDots();updateTitle();saveSettings();
+  }
+  function saveSettings(){try{localStorage.setItem('pomodoro_settings',JSON.stringify({work:WORK,short:SHORT,long:LONG,total:TOTAL,longEvery:LONG_EVERY,objective:document.getElementById('inputObjective').value.trim()}));}catch(e){}}
+  function loadSettings(){try{var s=JSON.parse(localStorage.getItem('pomodoro_settings'));if(!s)return;WORK=s.work||25*60;SHORT=s.short||5*60;LONG=(typeof s.long==='number')?s.long:15*60;TOTAL=s.total||4;LONG_EVERY=s.longEvery||4;document.getElementById('inputWork').value=Math.round(WORK/60);document.getElementById('inputShort').value=Math.round(SHORT/60);document.getElementById('inputLong').value=Math.round(LONG/60);document.getElementById('inputTotal').value=TOTAL;document.getElementById('inputLongEvery').value=LONG_EVERY;if(s.objective){document.getElementById('inputObjective').value=s.objective;objDisp.textContent=s.objective;}timeLeft=WORK;display.textContent=fmt(WORK);counterEl.textContent='Pomodoro 1 of '+TOTAL;}catch(e){}}
+
+  function toggleStart(){
+    if(phase==='idle'){startWork();return;}if(phase==='done')return;
+    if(running){clearInterval(interval);running=false;controls.querySelector('.primary').textContent='Resume';}
+    else{running=true;controls.querySelector('.primary').textContent='Pause';interval=setInterval(tick,1000);}
+  }
+  function startWork(){
+    phase='work';timeLeft=WORK;running=true;warningShown=false;reflectionShown=false;noteSubmittedThisPomodoro=false;
+    document.body.className='work';pLabel.textContent='Work';
+    counterEl.textContent='Pomodoro '+(count+1)+' of '+TOTAL;display.textContent=fmt(timeLeft);
+    warningLabel.classList.remove('visible');warningLabel.textContent='';
+    reflectionPanel.classList.remove('visible');noteSavedBadge.classList.remove('visible');
+    reflectionTitle.value='';reflectionText.value='';settingsPanel.style.display='';
+    renderControls('Pause');clearInterval(interval);interval=setInterval(tick,1000);
+    updateDots();updateTitle();playTransitionSound();requestNotifications();
+    enterCompact();
+  }
+  function startBreak(isLong){
+    phase=isLong?'longBreak':'shortBreak';timeLeft=isLong?LONG:SHORT;running=true;
+    document.body.className='break';pLabel.textContent=isLong?'Long Break':'Short Break';
+    display.textContent=fmt(timeLeft);warningLabel.classList.remove('visible');warningLabel.textContent='';
+    reflectionPanel.classList.remove('visible');noteSavedBadge.classList.remove('visible');
+    settingsPanel.style.display='';renderControls('Pause');
+    clearInterval(interval);interval=setInterval(tick,1000);updateTitle();
+  }
+  function showReflectionPanel(){
+    reflectionShown=true;reflectionTitle.value='';reflectionText.value='';
+    noteSavedBadge.classList.remove('visible');
+    reflectionPanel.classList.add('visible');reflectionTitle.focus();
+  }
+  function submitReflection(){
+    var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
+    if(!text&&!title){showNoteStatus('Write something first');return;}
+    if(noteSubmittedThisPomodoro){
+      for(var i=sessionNotes.length-1;i>=0;i--){if(sessionNotes[i].pomodoro===count+1){sessionNotes[i].title=title;sessionNotes[i].text=text;sessionNotes[i].time=formatTime();break;}}
+      showNoteStatus('Note updated');
+    }else{
+      sessionNotes.push({pomodoro:count+1,title:title,text:text,time:formatTime()});
+      noteSubmittedThisPomodoro=true;showNoteStatus('Note saved');
+    }
+    noteSavedBadge.classList.add('visible');
+  }
+  function autoSaveReflection(){
+    var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
+    if((text||title)&&!noteSubmittedThisPomodoro){
+      sessionNotes.push({pomodoro:count+1,title:title,text:text,time:formatTime()});noteSubmittedThisPomodoro=true;
+    }else if((text||title)&&noteSubmittedThisPomodoro){
+      for(var i=sessionNotes.length-1;i>=0;i--){if(sessionNotes[i].pomodoro===count+1){sessionNotes[i].title=title;sessionNotes[i].text=text;sessionNotes[i].time=formatTime();break;}}
+    }
+  }
+  function tick(){
+    timeLeft--;display.textContent=fmt(timeLeft);updateTitle();
+    if(phase==='work'&&timeLeft===120&&!reflectionShown){
+      exitCompact();
+      playWarningSound();display.classList.add('pulse');
+      warningLabel.textContent='2 min — reflect';warningLabel.classList.add('visible');
+      notify('Pomodoro Timer','2 minutes left — time to reflect');
+      setTimeout(function(){display.classList.remove('pulse');},2000);
+      showReflectionPanel();
+    }
+    if(timeLeft>0)return;clearInterval(interval);running=false;
+    if(phase==='work'){
+      autoSaveReflection();reflectionPanel.classList.remove('visible');
+      warningLabel.classList.remove('visible');warningLabel.textContent='';
+      count++;updateDots();playSessionEndSound();
+      notify('Pomodoro Complete','Pomodoro '+count+' of '+TOTAL+' done');
+      if(count>=TOTAL)showDone();
+      else{var isLong=(LONG>0)&&(count%LONG_EVERY===0);startBreak(isLong);}
+    }else{
+      playTransitionSound();notify('Break Over','Ready for the next pomodoro?');
+      phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';
+      counterEl.textContent='Pomodoro '+(count+1)+' of '+TOTAL;
+      display.textContent=fmt(WORK);renderControls('Start');updateTitle();
+    }
+  }
+  function resetBlock(){
+    clearInterval(interval);running=false;reflectionPanel.classList.remove('visible');
+    noteSavedBadge.classList.remove('visible');warningLabel.classList.remove('visible');
+    warningLabel.textContent='';reflectionShown=false;noteSubmittedThisPomodoro=false;
+    if(phase==='shortBreak')timeLeft=SHORT;else if(phase==='longBreak')timeLeft=LONG;else timeLeft=WORK;
+    display.textContent=fmt(timeLeft);renderControls('Start');updateTitle();
+  }
+  function skipPhase(){
+    clearInterval(interval);running=false;
+    if(phase==='work'){autoSaveReflection();reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');count++;updateDots();playSessionEndSound();if(count>=TOTAL)showDone();else{var isLong=(LONG>0)&&(count%LONG_EVERY===0);startBreak(isLong);}}
+    else if(phase==='shortBreak'||phase==='longBreak'){phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';counterEl.textContent='Pomodoro '+(count+1)+' of '+TOTAL;display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
+    else startWork();
+  }
+  function showDone(){
+    exitCompact();
+    phase='done';document.body.className='done';pLabel.textContent='Done';display.textContent='00:00';
+    doneMsg.classList.add('visible');reflectionPanel.classList.remove('visible');settingsPanel.style.display='';
+    if(sessionNotes.length>0){var html='';sessionNotes.forEach(function(n){var h=n.title||('Pomodoro '+n.pomodoro);html+='<div class="summary-item"><strong>'+escapeHtml(h)+'</strong> ('+n.time+')<br>'+escapeHtml(n.text)+'</div>';});summaryContent.innerHTML=html;summaryEl.classList.add('visible');}
+    controls.innerHTML='<button class="primary" onclick="copyAllNotes()">Copy All</button><button class="secondary" onclick="restart()">Again</button>';
+    playGameBoySound();updateTitle();
+    notify('Session Complete!','All '+TOTAL+' pomodoros done. Well done!');
+  }
+  function restart(){
+    exitCompact();
+    count=0;phase='idle';timeLeft=WORK;running=false;sessionNotes=[];warningShown=false;
+    reflectionShown=false;noteSubmittedThisPomodoro=false;document.body.className='';
+    pLabel.textContent='Ready';counterEl.textContent='Pomodoro 1 of '+TOTAL;
+    display.textContent=fmt(WORK);doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
+    reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');
+    warningLabel.textContent='';noteSavedBadge.classList.remove('visible');
+    renderControls('Start');buildDots();updateTitle();
+  }
+  function renderControls(l){controls.innerHTML='<button class="primary" onclick="toggleStart()">'+l+'</button><button class="secondary" onclick="resetBlock()">Reset</button><button class="secondary" onclick="skipPhase()">Skip</button>';}
+
+  function escapeHtml(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+  function getObjective(){return document.getElementById('inputObjective').value.trim()||'No objective set';}
+  function generateSingleMarkdown(n){var h=n.title||('Pomodoro '+n.pomodoro);return'## '+h+' — '+formatDate()+' '+n.time+'\n**Objective:** '+getObjective()+'\n\n'+n.text+'\n';}
+  function generateAllMarkdown(){
+    var md='# Pomodoro Session — '+formatDate()+'\n**Objective:** '+getObjective()+'\n**Duration:** '+(TOTAL*Math.round(WORK/60))+' min ('+TOTAL+' x '+Math.round(WORK/60)+' min)\n\n';
+    sessionNotes.forEach(function(n){var h=n.title||('Pomodoro '+n.pomodoro);md+='### '+h+' ('+n.time+')\n'+n.text+'\n\n';});
+    return md.trim()+'\n';
+  }
+  function copyCurrentNote(){
+    var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
+    if(!text){showNoteStatus('Nothing to copy');return;}
+    var md=generateSingleMarkdown({pomodoro:count+1,title:title,text:text,time:formatTime()});
+    navigator.clipboard.writeText(md).then(function(){showNoteStatus('Copied');}).catch(function(){showNoteStatus('Could not copy');});
+  }
+  function copyAllNotes(){
+    if(sessionNotes.length===0)return;
+    navigator.clipboard.writeText(generateAllMarkdown()).then(function(){var b=controls.querySelector('.primary');if(b){b.textContent='Copied';setTimeout(function(){b.textContent='Copy All';},2000);}}).catch(function(){});
+  }
+  function showNoteStatus(m){notesStatus.textContent=m;notesStatus.classList.add('visible');setTimeout(function(){notesStatus.classList.remove('visible');},2500);}
+
+  function toggleMute(){muted=!muted;document.getElementById('muteBtn').textContent=muted?'Sound Off':'Sound On';try{localStorage.setItem('pomodoro_muted',muted?'1':'0');}catch(e){}}
+  function loadMute(){try{muted=localStorage.getItem('pomodoro_muted')==='1';document.getElementById('muteBtn').textContent=muted?'Sound Off':'Sound On';}catch(e){}}
+  function toggleFunnyMode(){funnyMode=!funnyMode;var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);try{localStorage.setItem('pomodoro_funny',funnyMode?'1':'0');}catch(e){}}
+  function loadFunnyMode(){try{funnyMode=localStorage.getItem('pomodoro_funny')==='1';var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);}catch(e){}}
+
+  document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
+
+  loadSettings();loadMute();loadFunnyMode();buildDots();display.textContent=fmt(WORK);updateTitle();
+</script>
+</body>
+</html>
