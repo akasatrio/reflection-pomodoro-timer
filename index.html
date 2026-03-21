@@ -251,6 +251,18 @@
   .close-btn:hover { opacity:0.9; color:#c0392b; }
   body.work .win-btn, body.compact .win-btn, body.mini .win-btn { color:#fff; }
   body.work .close-btn:hover, body.compact .close-btn:hover, body.mini .close-btn:hover { color:#ff6b6b; }
+
+  /* Update banner */
+  .update-banner {
+    display:none; padding:0.35rem 0.6rem; margin-bottom:0.6rem;
+    background:var(--surface); border:1px solid var(--border-light);
+    font-size:0.5rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
+    cursor:pointer; transition:all 0.3s; opacity:0.7;
+  }
+  .update-banner:hover { opacity:1; background:var(--border-light); }
+  .update-banner.visible { display:block; }
+  .update-banner.updating { pointer-events:none; opacity:0.4; }
+  body.compact .update-banner, body.mini .update-banner { display:none !important; }
 </style>
 </head>
 <body>
@@ -261,6 +273,10 @@
       <button class="win-btn minimize-btn" onclick="hideToMenuBar()" title="Minimize to menu bar">&#x2013;</button>
       <button class="win-btn close-btn" onclick="closeApp()" title="Close">&times;</button>
     </div>
+  </div>
+  <!-- Update banner -->
+  <div class="update-banner" id="updateBanner" onclick="applyUpdate()">
+    &#x2191; Update available (<span id="updateVersion"></span>) — Restart to update
   </div>
   <!-- Settings -->
   <div class="settings" id="settingsPanel">
@@ -568,6 +584,44 @@
   function loadFunnyMode(){try{funnyMode=localStorage.getItem('pomodoro_funny')==='1';var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);}catch(e){}}
 
   document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
+
+  // Update checker
+  var APP_VERSION='0.2.1';
+  var GITHUB_REPO='akasatrio/reflection-pomodoro-timer';
+  function compareVersions(a,b){
+    var pa=a.replace(/^v/,'').split('.').map(Number),pb=b.replace(/^v/,'').split('.').map(Number);
+    for(var i=0;i<3;i++){if((pa[i]||0)>(pb[i]||0))return 1;if((pa[i]||0)<(pb[i]||0))return -1;}return 0;
+  }
+  function checkForUpdate(){
+    fetch('https://api.github.com/repos/'+GITHUB_REPO+'/releases/latest')
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(data.tag_name&&compareVersions(data.tag_name,APP_VERSION)>0){
+          var banner=document.getElementById('updateBanner');
+          document.getElementById('updateVersion').textContent=data.tag_name;
+          banner.classList.add('visible');
+        }
+      }).catch(function(){});
+  }
+  function applyUpdate(){
+    var banner=document.getElementById('updateBanner');
+    banner.classList.add('updating');
+    banner.textContent='Downloading and building update\u2026';
+    panelMsg('updateApp');
+  }
+  function updateFailed(msg){
+    var banner=document.getElementById('updateBanner');
+    banner.classList.remove('updating');
+    banner.innerHTML='Update failed — click to retry';
+    banner.onclick=function(){checkForUpdate();applyUpdate();};
+    setTimeout(function(){
+      banner.innerHTML='&#x2191; Update available (<span id="updateVersion"></span>) — Restart to update';
+      banner.onclick=function(){applyUpdate();};
+      checkForUpdate();
+    },5000);
+  }
+  checkForUpdate();
+  setInterval(checkForUpdate,30*60*1000);
 
   loadSettings();loadMute();loadFunnyMode();buildDots();display.textContent=fmt(WORK);updateTitle();
 </script>
