@@ -180,6 +180,52 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
 
         } else if action == "panelClose" {
             NSApp.terminate(nil)
+
+        } else if action == "updateApp" {
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                let tempDir = NSTemporaryDirectory() + "pomodoro-update"
+                let script = """
+                set -e
+                rm -rf "\(tempDir)"
+                mkdir -p "\(tempDir)"
+                /usr/bin/curl -sL "https://github.com/akasatrio/reflection-pomodoro-timer/archive/refs/heads/main.zip" -o "\(tempDir)/source.zip"
+                cd "\(tempDir)"
+                /usr/bin/unzip -q source.zip
+                cd reflection-pomodoro-timer-main
+                chmod +x build.sh
+                ./build.sh
+                rm -rf "\(tempDir)"
+                """
+
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: "/bin/bash")
+                process.arguments = ["-c", script]
+                process.standardOutput = FileHandle.nullDevice
+                process.standardError = FileHandle.nullDevice
+
+                do {
+                    try process.run()
+                    process.waitUntilExit()
+
+                    DispatchQueue.main.async {
+                        if process.terminationStatus == 0 {
+                            let relaunch = Process()
+                            relaunch.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+                            relaunch.arguments = ["/Applications/Reflection Pomodoro Timer.app"]
+                            try? relaunch.run()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                NSApp.terminate(nil)
+                            }
+                        } else {
+                            self?.webView.evaluateJavaScript("updateFailed('Build failed')", completionHandler: nil)
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self?.webView.evaluateJavaScript("updateFailed('Update failed')", completionHandler: nil)
+                    }
+                }
+            }
         }
     }
 
