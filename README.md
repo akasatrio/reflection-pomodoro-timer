@@ -44,7 +44,7 @@ Or copy it to your Desktop / Applications folder.
 Sound files are not included in this repo. To add notification sounds:
 
 1. Create a `sound effect/` folder in the project root
-2. Add an MP3 file named `nintendo-game-boy-startup.mp3` (or any short notification sound)
+2. Add a short MP3 file named `notification.mp3` (or rename it to match the filename in `index.html`)
 3. Run `./build.sh` to copy it into the app bundle
 
 If no sound files are present, the app falls back to a synthesised bell sound.
