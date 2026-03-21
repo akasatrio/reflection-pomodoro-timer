@@ -108,16 +108,14 @@
   }
   .warning-label.visible { opacity:0.45; }
 
-  .progress-dots { display:flex; justify-content:center; gap:0.3rem; margin-bottom:0.5rem; }
+  .progress-dots { display:flex; justify-content:center; gap:0.5rem; margin-bottom:1.2rem; }
   .dot {
-    width:5px; height:5px; border-radius:50%; background:currentColor; opacity:0.12;
+    width:10px; height:10px; border-radius:50%; background:currentColor; opacity:0.15;
     transition: opacity 0.5s, transform 0.4s;
   }
-  .dot.filled { opacity:0.65; transform:scale(1.2); }
-
-  .counter {
-    font-size:0.6rem; font-weight:600; opacity:0.35; margin-bottom:1.2rem;
-  }
+  .dot.filled { opacity:0.65; transform:scale(1.15); }
+  .dot.active { opacity:0.4; animation: dotPulse 1.5s ease infinite; }
+  @keyframes dotPulse { 0%,100%{opacity:0.4} 50%{opacity:0.2} }
 
   /* Controls */
   .controls { display:flex; gap:0; justify-content:center; margin-top:0.8rem; }
@@ -224,7 +222,6 @@
   body.mini .done-message { display:none; }
   body.mini .session-summary { display:none; }
   body.mini .progress-dots { display:none; }
-  body.mini .counter { display:none; }
   body.mini .warning-label { display:none; }
   body.mini .controls { display:none; }
   body.mini .toggles-row { display:none; }
@@ -249,8 +246,8 @@
   .win-btn { background:none; border:none; cursor:pointer; font-size:1rem; line-height:1; width:1.5rem; height:1.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--green); opacity:0.5; transition:opacity 0.15s, background 0.15s, color 0.15s; padding:0; font-family:'M PLUS Rounded 1c',sans-serif; position:relative; z-index:100; }
   .win-btn:hover { opacity:0.8; background:var(--surface); }
   .close-btn:hover { opacity:0.9; color:#c0392b; }
-  body.work .win-btn, body.compact .win-btn, body.mini .win-btn { color:#fff; }
-  body.work .close-btn:hover, body.compact .close-btn:hover, body.mini .close-btn:hover { color:#ff6b6b; }
+  .win-btn { color:#fff !important; }
+  .close-btn:hover { color:#ff6b6b !important; }
 
   /* Update banner */
   .update-banner {
@@ -300,7 +297,6 @@
   <div class="timer" id="timerDisplay">25:00</div>
   <div class="warning-label" id="warningLabel"></div>
   <div class="progress-dots" id="progressDots"></div>
-  <div class="counter" id="counter">Pomodoro 1 of 4</div>
 
   <!-- Reflection -->
   <div class="reflection-panel" id="reflectionPanel">
@@ -316,7 +312,7 @@
   </div>
 
   <!-- Done -->
-  <div class="done-message" id="doneMsg">Session complete. Well done, Adhi.</div>
+  <div class="done-message" id="doneMsg">Session complete. Well done.</div>
   <div class="session-summary" id="sessionSummary">
     <div class="section-title">Session Summary</div>
     <div id="summaryContent"></div>
@@ -356,7 +352,6 @@
 
   const display=document.getElementById('timerDisplay'),
     pLabel=document.getElementById('phaseLabel'),
-    counterEl=document.getElementById('counter'),
     doneMsg=document.getElementById('doneMsg'),
     controls=document.getElementById('controls'),
     objDisp=document.getElementById('objectiveDisplay'),
@@ -411,8 +406,8 @@
   function formatDate(){var d=new Date(),m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();}
   function formatTime(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 
-  function buildDots(){progressDots.innerHTML='';for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot';d.id='d'+i;if(i<count)d.classList.add('filled');progressDots.appendChild(d);}}
-  function updateDots(){for(var i=0;i<TOTAL;i++){var d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<count);}}
+  function buildDots(){progressDots.innerHTML='';for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot';d.id='d'+i;if(i<count)d.classList.add('filled');else if(i===count&&phase==='work')d.classList.add('active');progressDots.appendChild(d);}}
+  function updateDots(){for(var i=0;i<TOTAL;i++){var d=document.getElementById('d'+i);if(d){d.classList.toggle('filled',i<count);d.classList.toggle('active',i===count&&(phase==='work'||phase==='shortBreak'||phase==='longBreak'));}}}
   function updateTitle(){document.title=(phase==='idle'||phase==='done')?'Pomodoro Timer':fmt(timeLeft)+' — Pomodoro';}
 
   function applySettings(){
@@ -429,7 +424,7 @@
     objDisp.textContent=obj;count=0;phase='idle';timeLeft=WORK;running=false;
     sessionNotes=[];reflectionShown=false;noteSubmittedThisPomodoro=false;
     document.body.className='';pLabel.textContent='Ready';
-    counterEl.textContent='Pomodoro 1 of '+TOTAL;display.textContent=fmt(WORK);
+    display.textContent=fmt(WORK);
     doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
     reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');
     warningLabel.textContent='';noteSavedBadge.classList.remove('visible');
@@ -444,7 +439,7 @@
     applySettings();
   }
   function saveSettings(){try{localStorage.setItem('pomodoro_settings',JSON.stringify({work:WORK,short:SHORT,long:LONG,total:TOTAL,longEvery:LONG_EVERY}));}catch(e){}}
-  function loadSettings(){try{var s=JSON.parse(localStorage.getItem('pomodoro_settings'));if(!s)return;WORK=s.work||25*60;SHORT=s.short||5*60;LONG=(typeof s.long==='number')?s.long:15*60;TOTAL=s.total||4;LONG_EVERY=s.longEvery||4;document.getElementById('inputWork').value=Math.round(WORK/60);document.getElementById('inputShort').value=Math.round(SHORT/60);document.getElementById('inputLong').value=Math.round(LONG/60);document.getElementById('inputTotal').value=TOTAL;document.getElementById('inputLongEvery').value=LONG_EVERY;timeLeft=WORK;display.textContent=fmt(WORK);counterEl.textContent='Pomodoro 1 of '+TOTAL;}catch(e){}}
+  function loadSettings(){try{var s=JSON.parse(localStorage.getItem('pomodoro_settings'));if(!s)return;WORK=s.work||25*60;SHORT=s.short||5*60;LONG=(typeof s.long==='number')?s.long:15*60;TOTAL=s.total||4;LONG_EVERY=s.longEvery||4;document.getElementById('inputWork').value=Math.round(WORK/60);document.getElementById('inputShort').value=Math.round(SHORT/60);document.getElementById('inputLong').value=Math.round(LONG/60);document.getElementById('inputTotal').value=TOTAL;document.getElementById('inputLongEvery').value=LONG_EVERY;timeLeft=WORK;display.textContent=fmt(WORK);}catch(e){}}
 
   function toggleStart(){
     if(phase==='idle'){startWork();return;}if(phase==='done')return;
@@ -454,7 +449,7 @@
   function startWork(skipSound){
     phase='work';timeLeft=WORK;running=true;warningShown=false;reflectionShown=false;noteSubmittedThisPomodoro=false;
     document.body.className='work';pLabel.textContent='Work';
-    counterEl.textContent='Pomodoro '+(count+1)+' of '+TOTAL;display.textContent=fmt(timeLeft);
+    updateDots();display.textContent=fmt(timeLeft);
     warningLabel.classList.remove('visible');warningLabel.textContent='';
     reflectionPanel.classList.remove('visible');noteSavedBadge.classList.remove('visible');
     reflectionTitle.value='';reflectionText.value='';settingsPanel.style.display='';
@@ -520,7 +515,7 @@
       var autoStart=localStorage.getItem('autoStartAfterBreak')==='1';
       if(autoStart){playTransitionSound();startWork(true);}
       else{playTransitionSound();phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';
-      counterEl.textContent='Pomodoro '+(count+1)+' of '+TOTAL;
+      updateDots();
       display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
     }
   }
@@ -534,7 +529,7 @@
   function skipPhase(){
     clearInterval(interval);running=false;
     if(phase==='work'){autoSaveReflection();reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');count++;updateDots();playSessionEndSound();if(count>=TOTAL)showDone();else{var isLong=(LONG>0)&&(count%LONG_EVERY===0);startBreak(isLong);}}
-    else if(phase==='shortBreak'||phase==='longBreak'){exitCompact();phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';counterEl.textContent='Pomodoro '+(count+1)+' of '+TOTAL;display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
+    else if(phase==='shortBreak'||phase==='longBreak'){exitCompact();phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';updateDots();display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
     else startWork();
   }
   function showDone(){
@@ -550,8 +545,7 @@
     exitCompact();
     count=0;phase='idle';timeLeft=WORK;running=false;sessionNotes=[];warningShown=false;
     reflectionShown=false;noteSubmittedThisPomodoro=false;document.body.className='';
-    pLabel.textContent='Ready';counterEl.textContent='Pomodoro 1 of '+TOTAL;
-    display.textContent=fmt(WORK);doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
+    pLabel.textContent='Ready';    display.textContent=fmt(WORK);doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
     reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');
     warningLabel.textContent='';noteSavedBadge.classList.remove('visible');
     renderControls('Start');buildDots();updateTitle();
