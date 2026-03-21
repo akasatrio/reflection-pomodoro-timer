@@ -1,4 +1,4 @@
-# Pomodoro Timer
+# Reflection/Pomodoro Timer
 
 A minimal, always-on-top Pomodoro timer for macOS. Built with Swift + WKWebView.
 
