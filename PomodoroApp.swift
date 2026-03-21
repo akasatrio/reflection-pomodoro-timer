@@ -6,6 +6,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
     var webView: WKWebView!
     let fullWidth: CGFloat = 280
     let fullHeight: CGFloat = 440
+    let reflectionWidth: CGFloat = 280
+    let reflectionHeight: CGFloat = 580
     let compactWidth: CGFloat = 280
     let compactHeight: CGFloat = 310
 
@@ -67,6 +69,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
             let oldHeight = panel.frame.height
             let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - compactHeight))
             panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: compactWidth, height: compactHeight)), display: true, animate: true)
+
+        } else if action == "sessionExpand" {
+            // Expand to reflection size (taller) but stay floating on top
+            let origin = panel.frame.origin
+            let oldHeight = panel.frame.height
+            let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - reflectionHeight))
+            panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: reflectionWidth, height: reflectionHeight)), display: true, animate: true)
 
         } else if action == "sessionStop" {
             // Back to normal level + restore full size

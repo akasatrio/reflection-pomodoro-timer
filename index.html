@@ -16,7 +16,7 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
-    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding-top: 0.8rem;
+    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding-top: 0.8rem; overflow: hidden;
     transition: background-color 0.8s, color 0.8s;
     background-color: rgba(234,232,227,0.88); color: var(--brown);
   }
@@ -287,6 +287,7 @@
     try{window.webkit.messageHandlers.panelControl.postMessage({action:action});}catch(e){}
   }
   function enterCompact(){document.body.classList.add('compact');panelMsg('sessionStart');}
+  function expandFull(){document.body.classList.remove('compact');panelMsg('sessionExpand');}
   function exitCompact(){document.body.classList.remove('compact');panelMsg('sessionStop');}
 
   const display=document.getElementById('timerDisplay'),
@@ -328,7 +329,7 @@
   let funnyAudio=null;
   function playGameBoySound(){
     if(muted)return;
-    try{if(funnyAudio)funnyAudio.pause();funnyAudio=new Audio('sound effect/nintendo-game-boy-startup.mp3');funnyAudio.play();}catch(e){}
+    try{if(funnyAudio)funnyAudio.pause();funnyAudio=new Audio('sound effect/nintendo-game-boy-startup.mp3');funnyAudio.play().catch(function(){bellStrike(1,0);});}catch(e){bellStrike(1,0);}
   }
   function playFunnySound(){
     if(muted||!funnyMode)return;
@@ -390,6 +391,7 @@
     enterCompact();
   }
   function startBreak(isLong){
+    exitCompact();
     phase=isLong?'longBreak':'shortBreak';timeLeft=isLong?LONG:SHORT;running=true;
     document.body.className='break';pLabel.textContent=isLong?'Long Break':'Short Break';
     display.textContent=fmt(timeLeft);warningLabel.classList.remove('visible');warningLabel.textContent='';
@@ -400,6 +402,7 @@
   function showReflectionPanel(){
     reflectionShown=true;reflectionTitle.value='';reflectionText.value='';
     noteSavedBadge.classList.remove('visible');
+    settingsPanel.style.display='none';
     reflectionPanel.classList.add('visible');reflectionTitle.focus();
   }
   function submitReflection(){
@@ -425,7 +428,7 @@
   function tick(){
     timeLeft--;display.textContent=fmt(timeLeft);updateTitle();
     if(phase==='work'&&timeLeft===120&&!reflectionShown){
-      exitCompact();
+      expandFull();
       playWarningSound();display.classList.add('pulse');
       warningLabel.textContent='2 min — reflect';warningLabel.classList.add('visible');
       notify('Pomodoro Timer','2 minutes left — time to reflect');
@@ -457,7 +460,7 @@
   function skipPhase(){
     clearInterval(interval);running=false;
     if(phase==='work'){autoSaveReflection();reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');count++;updateDots();playSessionEndSound();if(count>=TOTAL)showDone();else{var isLong=(LONG>0)&&(count%LONG_EVERY===0);startBreak(isLong);}}
-    else if(phase==='shortBreak'||phase==='longBreak'){phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';counterEl.textContent='Pomodoro '+(count+1)+' of '+TOTAL;display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
+    else if(phase==='shortBreak'||phase==='longBreak'){exitCompact();phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';counterEl.textContent='Pomodoro '+(count+1)+' of '+TOTAL;display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
     else startWork();
   }
   function showDone(){

@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+._*
+
+# Claude Code
+.claude/
+
+# Sound effects (copyrighted — add your own .mp3 files)
+sound effect/
+
+# Built app bundle (build locally with build.sh)
+Pomodoro Timer.app/Contents/MacOS/PomodoroTimer
+Pomodoro Timer.app/Contents/_CodeSignature/
+
+# Legacy launchers
+Pomodoro Timer
+Pomodoro Timer.applescript
+Pomodoro Timer.command
