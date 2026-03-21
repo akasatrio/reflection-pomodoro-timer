@@ -104,12 +104,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
 
         if event.type == .rightMouseUp {
             let menu = NSMenu()
+
+            // Preferences submenu
+            let prefsMenu = NSMenu()
+            let autoStartItem = NSMenuItem(title: "Auto-start after break", action: #selector(toggleAutoStart(_:)), keyEquivalent: "")
+            autoStartItem.target = self
+            autoStartItem.state = getPreference("autoStartAfterBreak") ? .on : .off
+            prefsMenu.addItem(autoStartItem)
+
+            let prefsMenuItem = NSMenuItem(title: "Preferences", action: nil, keyEquivalent: "")
+            prefsMenuItem.submenu = prefsMenu
+            menu.addItem(prefsMenuItem)
+
+            menu.addItem(NSMenuItem.separator())
             let loginItem = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin(_:)), keyEquivalent: "")
             loginItem.target = self
             loginItem.state = isLaunchAtLoginEnabled() ? .on : .off
             menu.addItem(loginItem)
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(withTitle: "Quit Pomodoro Timer", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+            menu.addItem(withTitle: "Quit Reflection Pomodoro Timer", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
             statusItem.menu = menu
             statusItem.button?.performClick(nil)
             statusItem.menu = nil
@@ -119,7 +132,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
         if panel.isVisible {
             panel.orderOut(nil)
         } else {
-            positionPanelBelowStatusItem()
             panel.makeKeyAndOrderFront(nil)
         }
     }
@@ -190,6 +202,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
             try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
             FileManager.default.createFile(atPath: path, contents: data)
         }
+    }
+
+    // Preferences stored in UserDefaults
+    func getPreference(_ key: String) -> Bool {
+        return UserDefaults.standard.bool(forKey: key)
+    }
+
+    func setPreference(_ key: String, value: Bool) {
+        UserDefaults.standard.set(value, forKey: key)
+        // Sync to JS localStorage
+        webView.evaluateJavaScript("localStorage.setItem('\(key)', '\(value ? "1" : "0")')", completionHandler: nil)
+    }
+
+    @objc func toggleAutoStart(_ sender: NSMenuItem) {
+        let current = getPreference("autoStartAfterBreak")
+        setPreference("autoStartAfterBreak", value: !current)
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { return false }

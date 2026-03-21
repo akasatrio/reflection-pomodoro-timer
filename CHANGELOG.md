@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.2.1 — 21 Mar 2026
+
+### New
+- Preferences submenu in right-click menu (auto-start after break toggle)
+- Settings reset button (↻) to restore defaults
+- App icon (minimal tomato + clock design)
+- Enter key applies objective text
+- Build script auto-installs to /Applications
+
+### Fixed
+- Double sound when auto-starting after break
+- Objective text no longer persists between app launches
+- Panel remembers position when toggling from menu bar
+- Info.plist missing icon reference after rename
+
+### Changed
+- Renamed app to Reflection Pomodoro Timer
+- Phase label ("Ready"/"Work") enlarged to 0.9rem
+- Counter text enlarged to 0.6rem
+
+---
+
 ## v0.2 — 21 Mar 2026
 
 ### New
