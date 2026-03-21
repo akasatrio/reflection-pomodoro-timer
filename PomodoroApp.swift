@@ -1,36 +1,58 @@
 import Cocoa
 import WebKit
 
+class DragView: NSView {
+    override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
+    }
+}
+
 class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
     var panel: NSPanel!
     var webView: WKWebView!
+    var statusItem: NSStatusItem!
     let fullWidth: CGFloat = 280
-    let fullHeight: CGFloat = 440
+    let fullHeight: CGFloat = 460
     let reflectionWidth: CGFloat = 280
     let reflectionHeight: CGFloat = 580
     let compactWidth: CGFloat = 280
     let compactHeight: CGFloat = 310
+    let dragBarHeight: CGFloat = 28
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Menu bar icon
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        if let button = statusItem.button {
+            button.image = NSImage(systemSymbolName: "timer", accessibilityDescription: "Pomodoro Timer")
+            button.action = #selector(togglePanel)
+            button.target = self
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        }
+
+        // Right-click menu
+        statusItem.menu = nil
+
         panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: fullWidth, height: fullHeight),
-            styleMask: [.titled, .closable, .nonactivatingPanel, .utilityWindow],
+            styleMask: [.titled, .fullSizeContentView, .nonactivatingPanel, .utilityWindow],
             backing: .buffered,
             defer: false
         )
-        panel.title = "Pomodoro Timer"
-        panel.isFloatingPanel = false          // Start as normal window (not floating)
+        panel.isFloatingPanel = false
         panel.becomesKeyOnlyIfNeeded = true
-        panel.level = .normal                  // Normal level when idle
+        panel.level = .normal
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.hidesOnDeactivate = false
         panel.isReleasedWhenClosed = false
-        panel.isMovableByWindowBackground = true
+        panel.titleVisibility = .hidden
         panel.titlebarAppearsTransparent = true
+        panel.standardWindowButton(.closeButton)?.isHidden = true
+        panel.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        panel.standardWindowButton(.zoomButton)?.isHidden = true
         panel.backgroundColor = NSColor(red: 0.918, green: 0.91, blue: 0.89, alpha: 0.88)
         panel.isOpaque = false
 
-        // Position top-right
+        // Position top-right on launch
         if let screen = NSScreen.main {
             let sf = screen.visibleFrame
             panel.setFrameOrigin(NSPoint(x: sf.maxX - fullWidth - 12, y: sf.maxY - fullHeight - 12))
@@ -38,15 +60,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
             panel.center()
         }
 
-        // WebView with message handler for JS → Swift communication
+        // WebView
         let config = WKWebViewConfiguration()
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
         config.userContentController.add(self, name: "panelControl")
 
-        webView = WKWebView(frame: panel.contentView!.bounds, configuration: config)
+        let contentView = panel.contentView!
+        webView = WKWebView(frame: contentView.bounds, configuration: config)
         webView.autoresizingMask = [.width, .height]
         webView.setValue(false, forKey: "drawsBackground")
-        panel.contentView?.addSubview(webView)
+        contentView.addSubview(webView)
+
+        // Transparent drag bar overlaid on top of webview
+        let dragBar = DragView(frame: NSRect(x: 0, y: contentView.bounds.height - dragBarHeight, width: contentView.bounds.width, height: dragBarHeight))
+        dragBar.autoresizingMask = [.width, .minYMargin]
+        contentView.addSubview(dragBar)
 
         let resourcePath = Bundle.main.resourcePath ?? (Bundle.main.bundlePath as NSString).deletingLastPathComponent
         let htmlURL = URL(fileURLWithPath: (resourcePath as NSString).appendingPathComponent("index.html"))
@@ -55,15 +83,55 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
         panel.makeKeyAndOrderFront(nil)
     }
 
+    func positionPanelBelowStatusItem() {
+        if let button = statusItem.button, let buttonWindow = button.window {
+            let buttonRect = button.convert(button.bounds, to: nil)
+            let screenRect = buttonWindow.convertToScreen(buttonRect)
+            let panelHeight = panel.frame.height
+            let x = screenRect.midX - (fullWidth / 2)
+            let y = screenRect.minY - panelHeight - 4
+            panel.setFrameOrigin(NSPoint(x: x, y: y))
+        } else if let screen = NSScreen.main {
+            let sf = screen.visibleFrame
+            panel.setFrameOrigin(NSPoint(x: sf.maxX - fullWidth - 12, y: sf.maxY - fullHeight - 12))
+        } else {
+            panel.center()
+        }
+    }
+
+    @objc func togglePanel() {
+        guard let event = NSApp.currentEvent else { return }
+
+        if event.type == .rightMouseUp {
+            let menu = NSMenu()
+            let loginItem = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin(_:)), keyEquivalent: "")
+            loginItem.target = self
+            loginItem.state = isLaunchAtLoginEnabled() ? .on : .off
+            menu.addItem(loginItem)
+            menu.addItem(NSMenuItem.separator())
+            menu.addItem(withTitle: "Quit Pomodoro Timer", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+            statusItem.menu = menu
+            statusItem.button?.performClick(nil)
+            statusItem.menu = nil
+            return
+        }
+
+        if panel.isVisible {
+            panel.orderOut(nil)
+        } else {
+            positionPanelBelowStatusItem()
+            panel.makeKeyAndOrderFront(nil)
+        }
+    }
+
     // Handle messages from JavaScript
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let dict = message.body as? [String: Any],
               let action = dict["action"] as? String else { return }
 
         if action == "sessionStart" {
-            // Float on top + shrink to compact
             panel.isFloatingPanel = true
-            panel.level = .floating
+            panel.level = NSWindow.Level(Int(CGWindowLevelForKey(.floatingWindow)) + 1)
 
             let origin = panel.frame.origin
             let oldHeight = panel.frame.height
@@ -71,14 +139,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
             panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: compactWidth, height: compactHeight)), display: true, animate: true)
 
         } else if action == "sessionExpand" {
-            // Expand to reflection size (taller) but stay floating on top
             let origin = panel.frame.origin
             let oldHeight = panel.frame.height
             let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - reflectionHeight))
             panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: reflectionWidth, height: reflectionHeight)), display: true, animate: true)
 
         } else if action == "sessionStop" {
-            // Back to normal level + restore full size
             panel.isFloatingPanel = false
             panel.level = .normal
 
@@ -86,14 +152,51 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
             let oldHeight = panel.frame.height
             let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - fullHeight))
             panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: fullWidth, height: fullHeight)), display: true, animate: true)
+
+        } else if action == "panelHide" {
+            panel.orderOut(nil)
+
+        } else if action == "panelClose" {
+            NSApp.terminate(nil)
         }
     }
 
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { return true }
+    // Launch at Login via LaunchAgent plist
+    let launchAgentID = "com.adhi.pomodoro-timer"
+
+    func launchAgentPath() -> String {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        return "\(home)/Library/LaunchAgents/\(launchAgentID).plist"
+    }
+
+    func isLaunchAtLoginEnabled() -> Bool {
+        return FileManager.default.fileExists(atPath: launchAgentPath())
+    }
+
+    @objc func toggleLaunchAtLogin(_ sender: NSMenuItem) {
+        let path = launchAgentPath()
+        if isLaunchAtLoginEnabled() {
+            try? FileManager.default.removeItem(atPath: path)
+        } else {
+            let appPath = Bundle.main.bundlePath
+            let plist: [String: Any] = [
+                "Label": launchAgentID,
+                "ProgramArguments": ["\(appPath)/Contents/MacOS/PomodoroTimer"],
+                "RunAtLoad": true
+            ]
+            let data = try? PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+            // Ensure LaunchAgents directory exists
+            let dir = (path as NSString).deletingLastPathComponent
+            try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+            FileManager.default.createFile(atPath: path, contents: data)
+        }
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { return false }
 }
 
 let app = NSApplication.shared
-app.setActivationPolicy(.regular)
+app.setActivationPolicy(.accessory)
 
 let mainMenu = NSMenu()
 let appMenuItem = NSMenuItem(); let appMenu = NSMenu()
