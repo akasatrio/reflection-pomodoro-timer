@@ -19,7 +19,7 @@ Designed for focused deep work sessions with built-in reflection notes that comp
 
 ## Design
 
-Muji-inspired minimal aesthetic with M PLUS Rounded 1c font. Color-coded phases: green (work), light beige (break), dark brown (done). Semi-transparent window at 88% opacity.
+Minimal aesthetic with M PLUS Rounded 1c font. Color-coded phases: green (work), light beige (break), dark brown (done). Semi-transparent window at 88% opacity.
 
 ## Build
 
