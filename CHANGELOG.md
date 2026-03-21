@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.2 — 21 Mar 2026
+
+### New
+- Menu bar app: timer icon in the macOS status bar, left-click to show/hide
+- Right-click menu with "Launch at Login" toggle and Quit option
+- Custom window controls: minimize (hide to menu bar) and close buttons
+- Borderless window with hidden titlebar and draggable top area
+
+### Fixed
+- Buttons not showing during break and when skipping sessions (exitCompact fix)
+- Double sound playing when a cycle ends
+
+### Changed
+- App no longer shows in Dock — lives in the menu bar only
+- Closing the window hides it instead of quitting
+- Signature added: &copy; Baradhio with Claude Code
+
+---
+
 ## v0.1 — 21 Mar 2026
 
 Initial release.
