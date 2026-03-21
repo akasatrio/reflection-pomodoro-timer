@@ -7,13 +7,15 @@
     <key>CFBundleIdentifier</key>
     <string>com.adhi.pomodoro-timer</string>
     <key>CFBundleName</key>
-    <string>Pomodoro Timer</string>
+    <string>Reflection Pomodoro Timer</string>
     <key>CFBundleDisplayName</key>
-    <string>Pomodoro Timer</string>
+    <string>Reflection Pomodoro Timer</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>LSUIElement</key>

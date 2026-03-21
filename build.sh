@@ -1,9 +1,9 @@
 #!/bin/bash
-# Build and sign Pomodoro Timer.app
+# Build and sign Reflection Pomodoro Timer.app
 set -e
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-APP="$DIR/Pomodoro Timer.app"
+APP="$DIR/Reflection Pomodoro Timer.app"
 MACOS="$APP/Contents/MacOS"
 RESOURCES="$APP/Contents/Resources"
 

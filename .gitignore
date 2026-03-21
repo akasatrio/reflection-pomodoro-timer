@@ -5,11 +5,14 @@
 # Claude Code
 .claude/
 
-# Sound effects (tracked on personal branch)
+# Sound effects (copyrighted — not included in repo)
+*.mp3
+sound effect/
+**/sound effect/
 
 # Built app bundle (build locally with build.sh)
-Pomodoro Timer.app/Contents/MacOS/PomodoroTimer
-Pomodoro Timer.app/Contents/_CodeSignature/
+Reflection Pomodoro Timer.app/Contents/MacOS/PomodoroTimer
+Reflection Pomodoro Timer.app/Contents/_CodeSignature/
 
 # Legacy launchers
 Pomodoro Timer

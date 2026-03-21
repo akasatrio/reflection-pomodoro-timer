@@ -109,7 +109,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
             loginItem.state = isLaunchAtLoginEnabled() ? .on : .off
             menu.addItem(loginItem)
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(withTitle: "Quit Pomodoro Timer", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+            menu.addItem(withTitle: "Quit Reflection Pomodoro Timer", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
             statusItem.menu = menu
             statusItem.button?.performClick(nil)
             statusItem.menu = nil
