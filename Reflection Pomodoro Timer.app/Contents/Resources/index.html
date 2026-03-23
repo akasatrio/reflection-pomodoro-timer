@@ -190,7 +190,7 @@
   .session-summary {
     display:none; text-align:left;
     border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light);
-    padding:0.6rem 0; margin-bottom:0.8rem; max-height:160px; overflow-y:auto;
+    padding:0.6rem 0; margin-bottom:0.8rem;
   }
   .session-summary.visible { display:block; }
   .session-summary .summary-item {
@@ -203,9 +203,8 @@
     letter-spacing:0.06em; text-transform:uppercase;
   }
 
-  .session-summary::-webkit-scrollbar { width:2px; }
-  .session-summary::-webkit-scrollbar-track { background:transparent; }
-  .session-summary::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+  body.done { overflow-y: auto; }
+  body.done::-webkit-scrollbar { display:none; }
 
   /* Compact mode — hide settings, objective, reflection during active session */
   body.compact .settings { display:none; }
@@ -337,8 +336,9 @@
   let muted=false, funnyMode=false;
 
   // Bridge to Swift panel control
-  function panelMsg(action){
-    try{window.webkit.messageHandlers.panelControl.postMessage({action:action});}catch(e){}
+  function panelMsg(action,extra){
+    var msg={action:action};if(extra)Object.keys(extra).forEach(function(k){msg[k]=extra[k];});
+    try{window.webkit.messageHandlers.panelControl.postMessage(msg);}catch(e){}
   }
   let miniMode=false;
   function enterCompact(){document.body.classList.add('compact');document.body.classList.remove('mini');miniMode=false;panelMsg('sessionStart');}
@@ -540,6 +540,7 @@
     controls.innerHTML='<button class="primary" onclick="copyAllNotes()">Copy All</button><button class="secondary" onclick="restart()">Again</button>';
     updateTitle();
     notify('Session Complete!','All '+TOTAL+' pomodoros done. Well done!');
+    requestAnimationFrame(function(){var h=document.documentElement.scrollHeight;panelMsg('sessionDone',{height:h});});
   }
   function restart(){
     exitCompact();
@@ -577,7 +578,7 @@
   function toggleFunnyMode(){funnyMode=!funnyMode;var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);try{localStorage.setItem('pomodoro_funny',funnyMode?'1':'0');}catch(e){}}
   function loadFunnyMode(){try{funnyMode=localStorage.getItem('pomodoro_funny')==='1';var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);}catch(e){}}
 
-  document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
+  document.addEventListener('keydown',function(e){if(e.metaKey&&e.key==='Enter'){e.preventDefault();toggleStart();return;}if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
 
   // Update checker
   var APP_VERSION='0.2.1';

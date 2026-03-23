@@ -166,6 +166,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
             let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - miniHeight))
             panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: miniWidth, height: miniHeight)), display: true, animate: true)
 
+        } else if action == "sessionDone" {
+            if let contentHeight = dict["height"] as? CGFloat, contentHeight > 0 {
+                let maxHeight: CGFloat
+                if let screen = panel.screen ?? NSScreen.main {
+                    maxHeight = screen.visibleFrame.height * 0.8
+                } else {
+                    maxHeight = 700
+                }
+                let targetHeight = min(contentHeight + dragBarHeight, maxHeight)
+                if targetHeight > panel.frame.height {
+                    let origin = panel.frame.origin
+                    let oldHeight = panel.frame.height
+                    let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - targetHeight))
+                    panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: fullWidth, height: targetHeight)), display: true, animate: true)
+                }
+            }
+
         } else if action == "sessionStop" {
             panel.isFloatingPanel = false
             panel.level = .normal
