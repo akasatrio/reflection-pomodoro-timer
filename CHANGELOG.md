@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.3.1 — 30 Mar 2026
+
+### New
+- Top-left app label **RefPom Timer** in the drag bar (hidden in mini mode).
+
+### Fixed
+- In-app updater: `build.sh` creates `Contents/MacOS` before `swiftc` so builds from the GitHub zip no longer fail (`ld: errno=2`).
+- Completion / cycle-break layouts: better document height reporting for `sessionDone`, extra panel height padding, and a taller scroll area for notes so content is less likely to clip.
+
+### Changed
+- Default panel height increased for the two-row settings grid; reflection panel height adjusted to match.
+- Footer signature spacing and container padding so the bottom of the window doesn’t crowd the copyright line.
+
+---
+
 ## v0.3.0 — 30 Mar 2026
 
 ### New

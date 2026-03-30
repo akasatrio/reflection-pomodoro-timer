@@ -36,7 +36,7 @@
     --border-light: rgba(234,232,227,0.08); --btn-bg: var(--beige); --btn-fg: var(--brown);
   }
 
-  .container { text-align:center; padding:0.3rem 1.2rem; width:100%; }
+  .container { text-align:center; padding:0.3rem 1.2rem 0.5rem; width:100%; }
 
   /* Settings */
   .settings {
@@ -139,7 +139,12 @@
   }
   button.secondary:hover { opacity:0.6; }
 
-  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.8rem; padding-bottom:0.8rem; }
+  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.8rem; padding-bottom:0.85rem; }
+  .signature {
+    font-size:0.55rem; opacity:0.35; margin-top:0.35rem;
+    padding:0.5rem 0 1.25rem; font-family:'M PLUS Rounded 1c',sans-serif;
+    line-height:1.4;
+  }
   .toggles-row button {
     background:none; border:none; color:inherit; font-family:inherit;
     font-size:0.44rem; font-weight:600; letter-spacing:0.12em;
@@ -204,7 +209,7 @@
     letter-spacing:0.06em; text-transform:uppercase;
   }
   .summary-scroll {
-    max-height:min(50vh, 340px);
+    max-height:min(58vh, 420px);
     overflow-y:auto;
     margin-top:0.35rem;
     padding-right:0.2rem;
@@ -218,6 +223,7 @@
   body.done { overflow-y: auto; }
   body.done::-webkit-scrollbar { width:6px; }
   body.done::-webkit-scrollbar-thumb { background:var(--border-light); border-radius:3px; }
+  body.done .container { padding-bottom:0.85rem; }
 
   /* Compact mode — hide settings, objective, reflection during active session */
   body.compact .settings { display:none; }
@@ -254,6 +260,17 @@
 
   /* Drag region + window controls */
   .drag-bar { height:1.6rem; width:100%; position:relative; }
+  .app-bar-title {
+    position:absolute; left:0; top:50%; transform:translateY(-50%);
+    font-size:0.56rem; font-weight:600; letter-spacing:0.04em;
+    opacity:0.42; pointer-events:none;
+    padding-left:0.1rem; max-width:calc(100% - 5.2rem);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  body.work .app-bar-title { opacity:0.38; }
+  body.break .app-bar-title { opacity:0.35; }
+  body.done .app-bar-title { opacity:0.4; }
+  body.mini .app-bar-title { display:none; }
   .window-controls { display:flex; justify-content:flex-end; gap:0.2rem; position:absolute; right:0; top:0; }
   .win-btn { background:none; border:none; cursor:pointer; font-size:1rem; line-height:1; width:1.5rem; height:1.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--green); opacity:0.5; transition:opacity 0.15s, background 0.15s, color 0.15s; padding:0; font-family:'M PLUS Rounded 1c',sans-serif; position:relative; z-index:100; }
   .win-btn:hover { opacity:0.8; background:var(--surface); }
@@ -277,6 +294,7 @@
 <body>
 <div class="container">
   <div class="drag-bar">
+    <span class="app-bar-title">RefPom Timer</span>
     <div class="window-controls">
       <button class="win-btn mini-btn" onclick="toggleMiniMode()" title="Mini mode">&#x2022;</button>
       <button class="win-btn minimize-btn" onclick="hideToMenuBar()" title="Minimize to menu bar">&#x2013;</button>
@@ -344,7 +362,7 @@
     <button onclick="toggleMute()" id="muteBtn">Sound On</button>
     <button onclick="toggleFunnyMode()" id="funnyBtn">Funny Mode</button>
   </div>
-  <div style="font-size:0.55rem;opacity:0.35;padding:0.8rem 0 0.3rem;font-family:'M PLUS Rounded 1c',sans-serif;">&copy; Baradhio with Claude Code</div>
+  <div class="signature">&copy; Baradhio with Claude Code</div>
 </div>
 
 <script>
@@ -442,12 +460,19 @@
     });
     summaryContent.innerHTML=html;
   }
+  function documentContentHeight(){
+    var de=document.documentElement, b=document.body;
+    return Math.max(
+      de.scrollHeight||0, b.scrollHeight||0,
+      de.offsetHeight||0, b.offsetHeight||0
+    );
+  }
   function requestPanelFitDone(){
     requestAnimationFrame(function(){
-      var h=document.documentElement.scrollHeight;
+      var h=documentContentHeight();
       panelMsg('sessionDone',{height:h});
       requestAnimationFrame(function(){
-        var h2=document.documentElement.scrollHeight;
+        var h2=documentContentHeight();
         if(h2>h)panelMsg('sessionDone',{height:h2});
       });
     });
@@ -674,7 +699,7 @@
   document.addEventListener('keydown',function(e){if(e.metaKey&&e.key==='Enter'){e.preventDefault();toggleStart();return;}if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
 
   // Update checker
-  var APP_VERSION='0.3.0';
+  var APP_VERSION='0.3.1';
   var GITHUB_REPO='akasatrio/reflection-pomodoro-timer';
   function compareVersions(a,b){
     var pa=a.replace(/^v/,'').split('.').map(Number),pb=b.replace(/^v/,'').split('.').map(Number);

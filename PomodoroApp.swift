@@ -12,9 +12,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
     var webView: WKWebView!
     var statusItem: NSStatusItem!
     let fullWidth: CGFloat = 280
-    let fullHeight: CGFloat = 460
+    /// Taller default so two-row settings + footer signature clear the panel bottom.
+    let fullHeight: CGFloat = 515
     let reflectionWidth: CGFloat = 280
-    let reflectionHeight: CGFloat = 580
+    let reflectionHeight: CGFloat = 610
     let compactWidth: CGFloat = 280
     let compactHeight: CGFloat = 310
     let miniWidth: CGFloat = 150
@@ -175,7 +176,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
                     maxHeight = 720
                 }
                 let minDoneHeight = fullHeight
-                let rawTarget = contentHeight + dragBarHeight
+                /// Extra points so footer, scrollbars, and WKWebView rounding don’t clip the last lines.
+                let layoutPadding: CGFloat = 28
+                let rawTarget = contentHeight + dragBarHeight + layoutPadding
                 let targetHeight = min(max(rawTarget, minDoneHeight), maxHeight)
                 let origin = panel.frame.origin
                 let oldHeight = panel.frame.height
