@@ -84,6 +84,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
         let htmlURL = URL(fileURLWithPath: (resourcePath as NSString).appendingPathComponent("index.html"))
         webView.loadFileURL(htmlURL, allowingReadAccessTo: URL(fileURLWithPath: resourcePath))
 
+        // Accessory (menu-bar-only) apps must activate explicitly or the panel stays behind other apps.
+        NSApp.activate(ignoringOtherApps: true)
+        panel.orderFrontRegardless()
         panel.makeKeyAndOrderFront(nil)
     }
 

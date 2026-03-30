@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.2 — 30 Mar 2026
+
+### Fixed
+- Launch: the timer panel activates the app and comes to the front immediately (`NSApp.activate`, `orderFrontRegardless`) so it no longer starts hidden behind other windows.
+
+---
+
 ## v0.3.1 — 30 Mar 2026
 
 ### New
