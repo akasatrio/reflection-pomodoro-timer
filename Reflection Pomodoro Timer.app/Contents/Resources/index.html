@@ -96,11 +96,12 @@
   }
   .phase-label {
     font-size:0.9rem; font-weight:700; letter-spacing:0.12em;
-    text-transform:uppercase; opacity:0.5; margin-bottom:0.5rem; margin-top:-1rem;
+    text-transform:uppercase; opacity:0.5; margin-bottom:0.45rem; margin-top:-1.15rem;
   }
+  body.compact .phase-label { margin-top:-1.38rem; }
   .timer {
     font-family:'M PLUS Rounded 1c', sans-serif; font-size:4rem; font-weight:300; letter-spacing:0.06em;
-    line-height:1; margin-bottom:0.6rem; font-variant-numeric:tabular-nums;
+    line-height:1; margin-bottom:0.52rem; font-variant-numeric:tabular-nums;
   }
   .timer.pulse { animation: pulse 0.6s ease 3; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
@@ -111,7 +112,7 @@
   }
   .warning-label.visible { opacity:0.45; }
 
-  .progress-dots { display:flex; justify-content:center; gap:0.5rem; margin-bottom:1.2rem; }
+  .progress-dots { display:flex; justify-content:center; gap:0.5rem; margin-bottom:1.05rem; }
   .dot {
     width:10px; height:10px; border-radius:50%; background:currentColor; opacity:0.15;
     transition: opacity 0.5s, transform 0.4s;
@@ -121,7 +122,7 @@
   @keyframes dotPulse { 0%,100%{opacity:0.4} 50%{opacity:0.2} }
 
   /* Controls */
-  .controls { display:flex; gap:0; justify-content:center; margin-top:0.8rem; }
+  .controls { display:flex; gap:0; justify-content:center; margin-top:0.68rem; }
   button.primary {
     border:none; padding:0.5rem 1.3rem; font-size:0.58rem; font-weight:700;
     letter-spacing:0.14em; text-transform:uppercase; cursor:pointer;
@@ -141,7 +142,7 @@
   }
   button.secondary:hover { opacity:0.6; }
 
-  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.65rem; padding-bottom:0.2rem; }
+  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.52rem; padding-bottom:0.2rem; }
   .signature {
     font-size:0.55rem; opacity:0.35; margin-top:0.85rem; margin-bottom:0;
     padding:0.12rem 0 0; font-family:'M PLUS Rounded 1c',sans-serif;

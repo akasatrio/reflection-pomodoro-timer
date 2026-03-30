@@ -350,7 +350,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
 }
 
 let app = NSApplication.shared
-app.setActivationPolicy(.accessory)
+app.setActivationPolicy(.regular)
 
 let mainMenu = NSMenu()
 let appMenuItem = NSMenuItem(); let appMenu = NSMenu()
