@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.3 — 30 Mar 2026
+
+### Fixed
+- Footer / copyright line: moved up slightly, tighter spacing under toggles, extra body bottom padding and `line-height` so text is not clipped by the panel edge.
+
+---
+
 ## v0.3.2 — 30 Mar 2026
 
 ### Fixed

@@ -16,7 +16,8 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
-    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding-top: 0.8rem; overflow: hidden;
+    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 0.8rem; padding-bottom: 0.65rem; overflow: hidden;
     transition: background-color 0.8s, color 0.8s;
     background-color: rgba(234,232,227,0.88); color: var(--brown);
   }
@@ -36,7 +37,7 @@
     --border-light: rgba(234,232,227,0.08); --btn-bg: var(--beige); --btn-fg: var(--brown);
   }
 
-  .container { text-align:center; padding:0.3rem 1.2rem 0.5rem; width:100%; }
+  .container { text-align:center; padding:0.3rem 1.2rem 0.65rem; width:100%; }
 
   /* Settings */
   .settings {
@@ -139,11 +140,12 @@
   }
   button.secondary:hover { opacity:0.6; }
 
-  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.8rem; padding-bottom:0.85rem; }
+  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.65rem; padding-bottom:0.45rem; }
   .signature {
-    font-size:0.55rem; opacity:0.35; margin-top:0.35rem;
-    padding:0.5rem 0 1.25rem; font-family:'M PLUS Rounded 1c',sans-serif;
-    line-height:1.4;
+    font-size:0.55rem; opacity:0.35; margin-top:0.08rem; margin-bottom:0;
+    padding:0.28rem 0 0.5rem; font-family:'M PLUS Rounded 1c',sans-serif;
+    line-height:1.55;
+    position:relative; top:-0.12rem;
   }
   .toggles-row button {
     background:none; border:none; color:inherit; font-family:inherit;
@@ -699,7 +701,7 @@
   document.addEventListener('keydown',function(e){if(e.metaKey&&e.key==='Enter'){e.preventDefault();toggleStart();return;}if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
 
   // Update checker
-  var APP_VERSION='0.3.2';
+  var APP_VERSION='0.3.3';
   var GITHUB_REPO='akasatrio/reflection-pomodoro-timer';
   function compareVersions(a,b){
     var pa=a.replace(/^v/,'').split('.').map(Number),pb=b.replace(/^v/,'').split('.').map(Number);
