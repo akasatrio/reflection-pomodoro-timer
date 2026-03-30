@@ -200,46 +200,84 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
 
         } else if action == "updateApp" {
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                let tempDir = NSTemporaryDirectory() + "pomodoro-update"
+                guard let self = self else { return }
+
+                let logsDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+                    .appendingPathComponent("Logs", isDirectory: true)
+                try? FileManager.default.createDirectory(at: logsDir, withIntermediateDirectories: true)
+                let logPath = logsDir.appendingPathComponent("ReflectionPomodoroTimer-update.log").path
+
+                let workName = "pomodoro-update-\(UUID().uuidString.prefix(8))"
+                let tempDir = (NSTemporaryDirectory() as NSString).appendingPathComponent(workName)
+                let targetBundle = Bundle.main.bundlePath
+
+                // Use env for paths so spaces/special chars stay safe; inherit user PATH for swiftc/codesign.
+                var env = ProcessInfo.processInfo.environment
+                env["POMO_TMP"] = tempDir
+                env["POMO_TARGET"] = targetBundle
+                env["POMO_LOG"] = logPath
+                env["POMODORO_SKIP_INSTALL"] = "1"
+
                 let script = """
                 set -e
-                rm -rf "\(tempDir)"
-                mkdir -p "\(tempDir)"
-                /usr/bin/curl -sL "https://github.com/akasatrio/reflection-pomodoro-timer/archive/refs/heads/main.zip" -o "\(tempDir)/source.zip"
-                cd "\(tempDir)"
+                exec >"$POMO_LOG" 2>&1
+                echo "=== Update started $(date) ==="
+                echo "Target bundle: $POMO_TARGET"
+                echo "Temp: $POMO_TMP"
+                rm -rf "$POMO_TMP"
+                mkdir -p "$POMO_TMP"
+                cd "$POMO_TMP"
+                /usr/bin/curl -fSL "https://github.com/akasatrio/reflection-pomodoro-timer/archive/refs/heads/main.zip" -o source.zip
                 /usr/bin/unzip -q source.zip
                 cd reflection-pomodoro-timer-main
                 chmod +x build.sh
                 ./build.sh
-                rm -rf "\(tempDir)"
+                NEW_APP="$(pwd)/Reflection Pomodoro Timer.app"
+                test -d "$NEW_APP"
+                /usr/bin/ditto "$NEW_APP" "$POMO_TARGET"
+                echo "=== Update finished OK $(date) ==="
+                cd /
+                rm -rf "$POMO_TMP"
                 """
 
                 let process = Process()
                 process.executableURL = URL(fileURLWithPath: "/bin/bash")
-                process.arguments = ["-c", script]
-                process.standardOutput = FileHandle.nullDevice
-                process.standardError = FileHandle.nullDevice
+                process.arguments = ["-lc", script]
+                process.environment = env
+                process.currentDirectoryURL = URL(fileURLWithPath: NSHomeDirectory())
 
                 do {
                     try process.run()
                     process.waitUntilExit()
 
+                    let status = process.terminationStatus
+
                     DispatchQueue.main.async {
-                        if process.terminationStatus == 0 {
+                        if status == 0 {
                             let relaunch = Process()
                             relaunch.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-                            relaunch.arguments = ["/Applications/Reflection Pomodoro Timer.app"]
+                            relaunch.arguments = [targetBundle]
                             try? relaunch.run()
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
                                 NSApp.terminate(nil)
                             }
                         } else {
-                            self?.webView.evaluateJavaScript("updateFailed('Build failed')", completionHandler: nil)
+                            let tail = AppDelegate.lastLinesOfFile(at: logPath, maxLines: 4)
+                            let safe = tail
+                                .replacingOccurrences(of: "\\", with: " ")
+                                .replacingOccurrences(of: "'", with: "′")
+                                .replacingOccurrences(of: "\n", with: " — ")
+                            let jsSafe = safe.prefix(220)
+                            let msg = jsSafe.isEmpty
+                                ? "Build or install failed (exit \(status)). See ~/Library/Logs/ReflectionPomodoroTimer-update.log"
+                                : String(jsSafe)
+                            let escaped = msg.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
+                            self.webView.evaluateJavaScript("updateFailed(\"\(escaped)\")", completionHandler: nil)
                         }
                     }
                 } catch {
                     DispatchQueue.main.async {
-                        self?.webView.evaluateJavaScript("updateFailed('Update failed')", completionHandler: nil)
+                        self.webView.evaluateJavaScript("updateFailed('Could not run updater: \\(error.localizedDescription)')", completionHandler: nil)
                     }
                 }
             }
@@ -291,6 +329,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
     @objc func toggleAutoStart(_ sender: NSMenuItem) {
         let current = getPreference("autoStartAfterBreak")
         setPreference("autoStartAfterBreak", value: !current)
+    }
+
+    /// Last lines of the updater log for surfacing errors in the web UI.
+    private static func lastLinesOfFile(at path: String, maxLines: Int) -> String {
+        guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
+              let text = String(data: data, encoding: .utf8) else { return "" }
+        let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
+        let tail = lines.suffix(maxLines)
+        return tail.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { return false }
