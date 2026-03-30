@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.3.5 — 30 Mar 2026
+
+### Fixed
+- Compact layout: `justify-content: flex-start` on `body.compact` removes the large empty band under the footer; **16px** bottom inset under the signature; tighter signature `line-height`.
+
+### Changed
+- Timer block (phase label through Sound / Funny toggles) shifted slightly upward (spacing + `body.compact` phase offset).
+- **Dock:** `NSApplication` activation policy **`.regular`** so the app appears in the Dock while running (was `.accessory`).
+
+---
+
 ## v0.3.4 — 30 Mar 2026
 
 ### Fixed
