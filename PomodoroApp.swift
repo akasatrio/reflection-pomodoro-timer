@@ -170,17 +170,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
             if let contentHeight = dict["height"] as? CGFloat, contentHeight > 0 {
                 let maxHeight: CGFloat
                 if let screen = panel.screen ?? NSScreen.main {
-                    maxHeight = screen.visibleFrame.height * 0.8
+                    maxHeight = screen.visibleFrame.height * 0.85
                 } else {
-                    maxHeight = 700
+                    maxHeight = 720
                 }
-                let targetHeight = min(contentHeight + dragBarHeight, maxHeight)
-                if targetHeight > panel.frame.height {
-                    let origin = panel.frame.origin
-                    let oldHeight = panel.frame.height
-                    let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - targetHeight))
-                    panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: fullWidth, height: targetHeight)), display: true, animate: true)
-                }
+                let minDoneHeight = fullHeight
+                let rawTarget = contentHeight + dragBarHeight
+                let targetHeight = min(max(rawTarget, minDoneHeight), maxHeight)
+                let origin = panel.frame.origin
+                let oldHeight = panel.frame.height
+                let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - targetHeight))
+                panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: fullWidth, height: targetHeight)), display: true, animate: true)
             }
 
         } else if action == "sessionStop" {

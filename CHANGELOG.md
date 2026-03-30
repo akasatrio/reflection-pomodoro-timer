@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.3.0 — 30 Mar 2026
+
+### New
+- **Sessions** (work blocks per cycle) and **Cycles** (how many full rounds), replacing the old single “Sets” counter; default **2** cycles with migration from saved settings.
+- **Long @** unchanged in behavior: long break after every N completed sessions in a cycle; when N equals Sessions, the cycle ends at Done (no extra long break).
+- **Cycle break** between rounds: long-break-length pause, congratulations, and notes compiled for the finished cycle only; final screen shows all notes across cycles.
+- Notes store **cycle** and **work index**; markdown export reflects the full run.
+
+### Fixed
+- Completion and inter-cycle screens: scrollable notes area and more reliable macOS panel resize (`sessionDone`) so Copy / Again stay reachable.
+
+---
+
 ## v0.2.1 — 21 Mar 2026
 
 ### New

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pomodoro Timer</title>
+<title>Reflection Pomodoro Timer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -49,7 +49,8 @@
   }
   .reset-btn { cursor:pointer; opacity:0.6; font-size:0.6rem; vertical-align:middle; transition:opacity 0.15s; }
   .reset-btn:hover { opacity:1; }
-  .settings-grid { display:flex; justify-content:center; gap:0; margin-bottom:0.4rem; }
+  .settings-grid { display:flex; justify-content:center; gap:0; margin-bottom:0.35rem; }
+  .settings-grid:last-of-type { margin-bottom:0.4rem; }
   .setting-field {
     display:flex; flex-direction:column; align-items:center; gap:0.15rem;
     flex:1; padding:0 0.2rem; position:relative;
@@ -202,9 +203,21 @@
     font-weight:600; opacity:1; font-size:0.54rem;
     letter-spacing:0.06em; text-transform:uppercase;
   }
+  .summary-scroll {
+    max-height:min(50vh, 340px);
+    overflow-y:auto;
+    margin-top:0.35rem;
+    padding-right:0.2rem;
+    -webkit-overflow-scrolling:touch;
+  }
+  .summary-scroll::-webkit-scrollbar { width:6px; }
+  .summary-scroll::-webkit-scrollbar-thumb {
+    background:var(--border); border-radius:3px;
+  }
 
   body.done { overflow-y: auto; }
-  body.done::-webkit-scrollbar { display:none; }
+  body.done::-webkit-scrollbar { width:6px; }
+  body.done::-webkit-scrollbar-thumb { background:var(--border-light); border-radius:3px; }
 
   /* Compact mode — hide settings, objective, reflection during active session */
   body.compact .settings { display:none; }
@@ -281,8 +294,11 @@
       <div class="setting-field"><label>Work</label><input type="number" id="inputWork" value="25" min="1" max="90"></div>
       <div class="setting-field"><label>Break</label><input type="number" id="inputShort" value="5" min="1" max="30"></div>
       <div class="setting-field"><label>Long</label><input type="number" id="inputLong" value="15" min="0" max="60"></div>
-      <div class="setting-field"><label>Sets</label><input type="number" id="inputTotal" value="4" min="1" max="20"></div>
-      <div class="setting-field"><label>Long @</label><input type="number" id="inputLongEvery" value="4" min="1" max="20"></div>
+    </div>
+    <div class="settings-grid">
+      <div class="setting-field"><label>Sessions</label><input type="number" id="inputSessionSize" value="4" min="1" max="20" title="Work blocks per cycle"></div>
+      <div class="setting-field"><label>Long @</label><input type="number" id="inputLongEvery" value="4" min="1" max="20" title="Long break after every N sessions in a cycle"></div>
+      <div class="setting-field"><label>Cycles</label><input type="number" id="inputCycles" value="2" min="1" max="20" title="How many full session rounds"></div>
     </div>
     <div class="objective-row">
       <input type="text" id="inputObjective" placeholder="What are you working on?" onkeydown="if(event.key==='Enter')applySettings()">
@@ -313,8 +329,10 @@
   <!-- Done -->
   <div class="done-message" id="doneMsg">Session complete. Well done.</div>
   <div class="session-summary" id="sessionSummary">
-    <div class="section-title">Session Summary</div>
-    <div id="summaryContent"></div>
+    <div class="section-title" id="summarySectionTitle">Session Summary</div>
+    <div class="summary-scroll" id="summaryScroll">
+      <div id="summaryContent"></div>
+    </div>
   </div>
 
   <div class="controls" id="controls">
@@ -330,8 +348,8 @@
 </div>
 
 <script>
-  let TOTAL=4, LONG_EVERY=4, WORK=25*60, SHORT=5*60, LONG=15*60;
-  let phase='idle', timeLeft=WORK, running=false, interval=null, count=0;
+  let SESSION_SIZE=4, CYCLES=2, LONG_EVERY=4, WORK=25*60, SHORT=5*60, LONG=15*60;
+  let phase='idle', timeLeft=WORK, running=false, interval=null, count=0, cycleIndex=0;
   let sessionNotes=[], warningShown=false, reflectionShown=false, noteSubmittedThisPomodoro=false;
   let muted=false, funnyMode=false;
 
@@ -362,6 +380,8 @@
     noteSavedBadge=document.getElementById('noteSavedBadge'),
     warningLabel=document.getElementById('warningLabel'),
     summaryEl=document.getElementById('sessionSummary'),
+    summarySectionTitle=document.getElementById('summarySectionTitle'),
+    summaryScroll=document.getElementById('summaryScroll'),
     summaryContent=document.getElementById('summaryContent'),
     settingsPanel=document.getElementById('settingsPanel'),
     progressDots=document.getElementById('progressDots');
@@ -406,9 +426,32 @@
   function formatDate(){var d=new Date(),m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();}
   function formatTime(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 
-  function buildDots(){progressDots.innerHTML='';for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot';d.id='d'+i;if(i<count)d.classList.add('filled');else if(i===count&&phase==='work')d.classList.add('active');progressDots.appendChild(d);}}
-  function updateDots(){for(var i=0;i<TOTAL;i++){var d=document.getElementById('d'+i);if(d){d.classList.toggle('filled',i<count);d.classList.toggle('active',i===count&&(phase==='work'||phase==='shortBreak'||phase==='longBreak'));}}}
+  function buildDots(){progressDots.innerHTML='';for(var i=0;i<SESSION_SIZE;i++){var d=document.createElement('div');d.className='dot';d.id='d'+i;if(i<count)d.classList.add('filled');else if(i===count&&phase==='work')d.classList.add('active');progressDots.appendChild(d);}}
+  function updateDots(){for(var i=0;i<SESSION_SIZE;i++){var d=document.getElementById('d'+i);if(d){d.classList.toggle('filled',i<count);d.classList.toggle('active',i===count&&(phase==='work'||phase==='shortBreak'||phase==='longBreak'||phase==='cycleBreak'));}}}
   function updateTitle(){document.title=(phase==='idle'||phase==='done')?'Pomodoro Timer':fmt(timeLeft)+' — Pomodoro';}
+  function interCycleDuration(){return LONG>0?LONG:SHORT;}
+  function notifyWorkBlockDone(){
+    notify('Pomodoro Complete','Session '+ (count)+' of '+SESSION_SIZE+' — cycle '+(cycleIndex+1)+' of '+CYCLES);
+  }
+  function noteKeyMatches(n){return n.cycle===cycleIndex&&n.workIndex===count+1;}
+  function renderSummaryHtml(notes){
+    var html='';
+    notes.forEach(function(n){
+      var h=n.title||('Session '+n.workIndex);
+      html+='<div class="summary-item"><strong>'+escapeHtml(h)+'</strong> ('+n.time+')<br>'+escapeHtml(n.text)+'</div>';
+    });
+    summaryContent.innerHTML=html;
+  }
+  function requestPanelFitDone(){
+    requestAnimationFrame(function(){
+      var h=document.documentElement.scrollHeight;
+      panelMsg('sessionDone',{height:h});
+      requestAnimationFrame(function(){
+        var h2=document.documentElement.scrollHeight;
+        if(h2>h)panelMsg('sessionDone',{height:h2});
+      });
+    });
+  }
 
   function applySettings(){
     if(running)return;exitCompact();
@@ -416,12 +459,14 @@
       s=parseInt(document.getElementById('inputShort').value)||5,
       l=parseInt(document.getElementById('inputLong').value);
     if(isNaN(l))l=15;
-    var t=parseInt(document.getElementById('inputTotal').value)||4,
+    var ss=parseInt(document.getElementById('inputSessionSize').value)||4,
+      cy=parseInt(document.getElementById('inputCycles').value)||2,
       le=parseInt(document.getElementById('inputLongEvery').value)||4,
       obj=document.getElementById('inputObjective').value.trim();
-    WORK=w*60;SHORT=s*60;LONG=l*60;TOTAL=Math.max(1,Math.min(20,t));LONG_EVERY=Math.max(1,Math.min(20,le));
-    document.getElementById('inputTotal').value=TOTAL;document.getElementById('inputLongEvery').value=LONG_EVERY;
-    objDisp.textContent=obj;count=0;phase='idle';timeLeft=WORK;running=false;
+    WORK=w*60;SHORT=s*60;LONG=l*60;
+    SESSION_SIZE=Math.max(1,Math.min(20,ss));CYCLES=Math.max(1,Math.min(20,cy));LONG_EVERY=Math.max(1,Math.min(20,le));
+    document.getElementById('inputSessionSize').value=SESSION_SIZE;document.getElementById('inputCycles').value=CYCLES;document.getElementById('inputLongEvery').value=LONG_EVERY;
+    objDisp.textContent=obj;count=0;cycleIndex=0;phase='idle';timeLeft=WORK;running=false;
     sessionNotes=[];reflectionShown=false;noteSubmittedThisPomodoro=false;
     document.body.className='';pLabel.textContent='Ready';
     display.textContent=fmt(WORK);
@@ -434,17 +479,49 @@
     document.getElementById('inputWork').value=25;
     document.getElementById('inputShort').value=5;
     document.getElementById('inputLong').value=15;
-    document.getElementById('inputTotal').value=4;
+    document.getElementById('inputSessionSize').value=4;
     document.getElementById('inputLongEvery').value=4;
+    document.getElementById('inputCycles').value=2;
     applySettings();
   }
-  function saveSettings(){try{localStorage.setItem('pomodoro_settings',JSON.stringify({work:WORK,short:SHORT,long:LONG,total:TOTAL,longEvery:LONG_EVERY}));}catch(e){}}
-  function loadSettings(){try{var s=JSON.parse(localStorage.getItem('pomodoro_settings'));if(!s)return;WORK=s.work||25*60;SHORT=s.short||5*60;LONG=(typeof s.long==='number')?s.long:15*60;TOTAL=s.total||4;LONG_EVERY=s.longEvery||4;document.getElementById('inputWork').value=Math.round(WORK/60);document.getElementById('inputShort').value=Math.round(SHORT/60);document.getElementById('inputLong').value=Math.round(LONG/60);document.getElementById('inputTotal').value=TOTAL;document.getElementById('inputLongEvery').value=LONG_EVERY;timeLeft=WORK;display.textContent=fmt(WORK);}catch(e){}}
+  function saveSettings(){try{localStorage.setItem('pomodoro_settings',JSON.stringify({work:WORK,short:SHORT,long:LONG,sessionSize:SESSION_SIZE,cycles:CYCLES,longEvery:LONG_EVERY}));}catch(e){}}
+  function loadSettings(){try{var s=JSON.parse(localStorage.getItem('pomodoro_settings'));if(!s)return;WORK=s.work||25*60;SHORT=s.short||5*60;LONG=(typeof s.long==='number')?s.long:15*60;SESSION_SIZE=(s.sessionSize!=null)?s.sessionSize:((s.total!=null)?s.total:4);CYCLES=(s.cycles!=null)?s.cycles:2;LONG_EVERY=s.longEvery||4;SESSION_SIZE=Math.max(1,Math.min(20,SESSION_SIZE));CYCLES=Math.max(1,Math.min(20,CYCLES));document.getElementById('inputWork').value=Math.round(WORK/60);document.getElementById('inputShort').value=Math.round(SHORT/60);document.getElementById('inputLong').value=Math.round(LONG/60);document.getElementById('inputSessionSize').value=SESSION_SIZE;document.getElementById('inputCycles').value=CYCLES;document.getElementById('inputLongEvery').value=LONG_EVERY;timeLeft=WORK;display.textContent=fmt(WORK);}catch(e){}}
 
   function toggleStart(){
     if(phase==='idle'){startWork();return;}if(phase==='done')return;
     if(running){clearInterval(interval);running=false;controls.querySelector('.primary').textContent='Resume';}
     else{running=true;controls.querySelector('.primary').textContent='Pause';interval=setInterval(tick,1000);}
+  }
+  function advanceAfterWorkBlock(){
+    if(count>=SESSION_SIZE){
+      if(cycleIndex+1<CYCLES){startCycleIntermission();}
+      else{showDoneFinal();}
+    }else{
+      var isLong=(LONG>0)&&(count%LONG_EVERY===0);
+      startBreak(isLong);
+    }
+  }
+  function startCycleIntermission(){
+    exitCompact();
+    phase='cycleBreak';timeLeft=interCycleDuration();running=true;
+    document.body.className='break';
+    pLabel.textContent='Cycle break';
+    display.textContent=fmt(timeLeft);
+    doneMsg.textContent='Cycle '+(cycleIndex+1)+' complete — great work. Take a longer pause, then continue when you’re ready.';
+    doneMsg.classList.add('visible');
+    summarySectionTitle.textContent='Notes this cycle';
+    var cycleNotes=sessionNotes.filter(function(n){return n.cycle===cycleIndex;});
+    if(cycleNotes.length>0){renderSummaryHtml(cycleNotes);summaryEl.classList.add('visible');}
+    else{summaryContent.innerHTML='';summaryEl.classList.remove('visible');}
+    warningLabel.classList.remove('visible');warningLabel.textContent='';
+    reflectionPanel.classList.remove('visible');noteSavedBadge.classList.remove('visible');
+    settingsPanel.style.display='';renderControls('Pause');
+    clearInterval(interval);interval=setInterval(tick,1000);updateTitle();
+    requestPanelFitDone();
+  }
+  function finishCycleIntermission(){
+    doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');summaryContent.innerHTML='';
+    count=0;cycleIndex++;playTransitionSound();startWork(true);
   }
   function startWork(skipSound){
     phase='work';timeLeft=WORK;running=true;warningShown=false;reflectionShown=false;noteSubmittedThisPomodoro=false;
@@ -476,10 +553,10 @@
     var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
     if(!text&&!title){showNoteStatus('Write something first');return;}
     if(noteSubmittedThisPomodoro){
-      for(var i=sessionNotes.length-1;i>=0;i--){if(sessionNotes[i].pomodoro===count+1){sessionNotes[i].title=title;sessionNotes[i].text=text;sessionNotes[i].time=formatTime();break;}}
+      for(var i=sessionNotes.length-1;i>=0;i--){if(noteKeyMatches(sessionNotes[i])){sessionNotes[i].title=title;sessionNotes[i].text=text;sessionNotes[i].time=formatTime();break;}}
       showNoteStatus('Note updated');
     }else{
-      sessionNotes.push({pomodoro:count+1,title:title,text:text,time:formatTime()});
+      sessionNotes.push({workIndex:count+1,cycle:cycleIndex,title:title,text:text,time:formatTime()});
       noteSubmittedThisPomodoro=true;showNoteStatus('Note saved');
     }
     noteSavedBadge.classList.add('visible');
@@ -487,9 +564,9 @@
   function autoSaveReflection(){
     var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
     if((text||title)&&!noteSubmittedThisPomodoro){
-      sessionNotes.push({pomodoro:count+1,title:title,text:text,time:formatTime()});noteSubmittedThisPomodoro=true;
+      sessionNotes.push({workIndex:count+1,cycle:cycleIndex,title:title,text:text,time:formatTime()});noteSubmittedThisPomodoro=true;
     }else if((text||title)&&noteSubmittedThisPomodoro){
-      for(var i=sessionNotes.length-1;i>=0;i--){if(sessionNotes[i].pomodoro===count+1){sessionNotes[i].title=title;sessionNotes[i].text=text;sessionNotes[i].time=formatTime();break;}}
+      for(var i=sessionNotes.length-1;i>=0;i--){if(noteKeyMatches(sessionNotes[i])){sessionNotes[i].title=title;sessionNotes[i].text=text;sessionNotes[i].time=formatTime();break;}}
     }
   }
   function tick(){
@@ -507,9 +584,16 @@
       autoSaveReflection();reflectionPanel.classList.remove('visible');
       warningLabel.classList.remove('visible');warningLabel.textContent='';
       count++;updateDots();playSessionEndSound();
-      notify('Pomodoro Complete','Pomodoro '+count+' of '+TOTAL+' done');
-      if(count>=TOTAL)showDone();
-      else{var isLong=(LONG>0)&&(count%LONG_EVERY===0);startBreak(isLong);}
+      notifyWorkBlockDone();
+      advanceAfterWorkBlock();
+    }else if(phase==='cycleBreak'){
+      var autoCy=localStorage.getItem('autoStartAfterBreak')==='1';
+      notify('Cycle break over',autoCy?('Starting cycle '+(cycleIndex+2)+'\u2026'):'Press Start when you\'re ready for the next cycle.');
+      var autoStart=autoCy;
+      if(autoStart){finishCycleIntermission();}
+      else{playTransitionSound();count=0;cycleIndex++;phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';
+        doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');summaryContent.innerHTML='';
+        updateDots();display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
     }else{
       notify('Break Over','Ready for the next pomodoro?');
       var autoStart=localStorage.getItem('autoStartAfterBreak')==='1';
@@ -523,28 +607,32 @@
     clearInterval(interval);running=false;reflectionPanel.classList.remove('visible');
     noteSavedBadge.classList.remove('visible');warningLabel.classList.remove('visible');
     warningLabel.textContent='';reflectionShown=false;noteSubmittedThisPomodoro=false;
-    if(phase==='shortBreak')timeLeft=SHORT;else if(phase==='longBreak')timeLeft=LONG;else timeLeft=WORK;
+    if(phase==='shortBreak')timeLeft=SHORT;else if(phase==='longBreak')timeLeft=LONG;else if(phase==='cycleBreak')timeLeft=interCycleDuration();else timeLeft=WORK;
     display.textContent=fmt(timeLeft);renderControls('Start');updateTitle();
   }
   function skipPhase(){
     clearInterval(interval);running=false;
-    if(phase==='work'){autoSaveReflection();reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');count++;updateDots();playSessionEndSound();if(count>=TOTAL)showDone();else{var isLong=(LONG>0)&&(count%LONG_EVERY===0);startBreak(isLong);}}
+    if(phase==='work'){autoSaveReflection();reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');count++;updateDots();playSessionEndSound();notifyWorkBlockDone();advanceAfterWorkBlock();}
+    else if(phase==='cycleBreak'){finishCycleIntermission();}
     else if(phase==='shortBreak'||phase==='longBreak'){exitCompact();phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';updateDots();display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
     else startWork();
   }
-  function showDone(){
+  function showDoneFinal(){
     exitCompact();
     phase='done';document.body.className='done';pLabel.textContent='Done';display.textContent='00:00';
+    doneMsg.textContent='All cycles complete — outstanding focus. Here’s everything you captured.';
     doneMsg.classList.add('visible');reflectionPanel.classList.remove('visible');settingsPanel.style.display='';
-    if(sessionNotes.length>0){var html='';sessionNotes.forEach(function(n){var h=n.title||('Pomodoro '+n.pomodoro);html+='<div class="summary-item"><strong>'+escapeHtml(h)+'</strong> ('+n.time+')<br>'+escapeHtml(n.text)+'</div>';});summaryContent.innerHTML=html;summaryEl.classList.add('visible');}
+    summarySectionTitle.textContent='All notes';
+    if(sessionNotes.length>0){renderSummaryHtml(sessionNotes);summaryEl.classList.add('visible');}
+    else{summaryContent.innerHTML='';summaryEl.classList.remove('visible');}
     controls.innerHTML='<button class="primary" onclick="copyAllNotes()">Copy All</button><button class="secondary" onclick="restart()">Again</button>';
     updateTitle();
-    notify('Session Complete!','All '+TOTAL+' pomodoros done. Well done!');
-    requestAnimationFrame(function(){var h=document.documentElement.scrollHeight;panelMsg('sessionDone',{height:h});});
+    notify('All complete!',''+CYCLES+' cycle'+(CYCLES!==1?'s':'')+' ('+SESSION_SIZE+' sessions each) finished.');
+    requestPanelFitDone();
   }
   function restart(){
     exitCompact();
-    count=0;phase='idle';timeLeft=WORK;running=false;sessionNotes=[];warningShown=false;
+    count=0;cycleIndex=0;phase='idle';timeLeft=WORK;running=false;sessionNotes=[];warningShown=false;
     reflectionShown=false;noteSubmittedThisPomodoro=false;document.body.className='';
     pLabel.textContent='Ready';    display.textContent=fmt(WORK);doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
     reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');
@@ -555,16 +643,21 @@
 
   function escapeHtml(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
   function getObjective(){return document.getElementById('inputObjective').value.trim()||'No objective set';}
-  function generateSingleMarkdown(n){var h=n.title||('Pomodoro '+n.pomodoro);return'## '+h+' — '+formatDate()+' '+n.time+'\n**Objective:** '+getObjective()+'\n\n'+n.text+'\n';}
+  function generateSingleMarkdown(n){
+    var h=n.title||('Session '+n.workIndex);
+    var cyc=(n.cycle!=null)?('\n**Cycle:** '+(n.cycle+1)):'';
+    return'## '+h+' — '+formatDate()+' '+n.time+'\n**Objective:** '+getObjective()+cyc+'\n\n'+n.text+'\n';
+  }
   function generateAllMarkdown(){
-    var md='# Pomodoro Session — '+formatDate()+'\n**Objective:** '+getObjective()+'\n**Duration:** '+(TOTAL*Math.round(WORK/60))+' min ('+TOTAL+' x '+Math.round(WORK/60)+' min)\n\n';
-    sessionNotes.forEach(function(n){var h=n.title||('Pomodoro '+n.pomodoro);md+='### '+h+' ('+n.time+')\n'+n.text+'\n\n';});
+    var wmin=Math.round(WORK/60),totalWorkMin=SESSION_SIZE*CYCLES*wmin;
+    var md='# Pomodoro run — '+formatDate()+'\n**Objective:** '+getObjective()+'\n**Plan:** '+CYCLES+' cycle'+(CYCLES!==1?'s':'')+' × '+SESSION_SIZE+' sessions × '+wmin+' min ('+totalWorkMin+' min work)\n\n';
+    sessionNotes.forEach(function(n){var h=n.title||('Session '+n.workIndex);md+='### '+h+' — cycle '+(n.cycle+1)+' ('+n.time+')\n'+n.text+'\n\n';});
     return md.trim()+'\n';
   }
   function copyCurrentNote(){
     var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
     if(!text){showNoteStatus('Nothing to copy');return;}
-    var md=generateSingleMarkdown({pomodoro:count+1,title:title,text:text,time:formatTime()});
+    var md=generateSingleMarkdown({workIndex:count+1,cycle:cycleIndex,title:title,text:text,time:formatTime()});
     navigator.clipboard.writeText(md).then(function(){showNoteStatus('Copied');}).catch(function(){showNoteStatus('Could not copy');});
   }
   function copyAllNotes(){
@@ -581,7 +674,7 @@
   document.addEventListener('keydown',function(e){if(e.metaKey&&e.key==='Enter'){e.preventDefault();toggleStart();return;}if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
 
   // Update checker
-  var APP_VERSION='0.2.1';
+  var APP_VERSION='0.3.0';
   var GITHUB_REPO='akasatrio/reflection-pomodoro-timer';
   function compareVersions(a,b){
     var pa=a.replace(/^v/,'').split('.').map(Number),pb=b.replace(/^v/,'').split('.').map(Number);
