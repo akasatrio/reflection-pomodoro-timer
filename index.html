@@ -38,7 +38,7 @@
     --border-light: rgba(234,232,227,0.08); --btn-bg: var(--beige); --btn-fg: var(--brown);
   }
 
-  .container { text-align:center; padding:0.3rem 1.2rem 0; width:100%; }
+  .container { text-align:center; padding:0.3rem 1.2rem 16px; width:100%; }
 
   /* Settings */
   .settings {
@@ -145,7 +145,7 @@
   .signature {
     font-size:0.55rem; opacity:0.35; margin-top:0.85rem; margin-bottom:0;
     padding:0.12rem 0 0; font-family:'M PLUS Rounded 1c',sans-serif;
-    line-height:1.55;
+    line-height:1.2;
   }
   .toggles-row button {
     background:none; border:none; color:inherit; font-family:inherit;
@@ -225,13 +225,14 @@
   body.done { overflow-y: auto; }
   body.done::-webkit-scrollbar { width:6px; }
   body.done::-webkit-scrollbar-thumb { background:var(--border-light); border-radius:3px; }
-  body.done .container { padding-bottom:0.15rem; }
+  body.done .container { padding-bottom:16px; }
 
   /* Compact mode — hide settings, objective, reflection during active session */
   body.compact {
     min-height: 100%;
     flex-direction: column;
     align-items: stretch;
+    justify-content: flex-start;
   }
   body.compact .settings { display:none; }
   body.compact .objective-display { display:none; }
@@ -243,12 +244,13 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    padding-bottom: 0.06rem;
+    padding-bottom: 16px;
   }
   body.compact .signature {
     margin-top: auto;
     padding-top: 0.5rem;
     padding-bottom: 0;
+    margin-bottom: 0;
   }
 
   /* Mini mode — only phase label + timer */
