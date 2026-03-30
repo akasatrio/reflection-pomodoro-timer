@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.3.4 — 30 Mar 2026
+
+### Fixed
+- Large empty band below the footer in compact/session view: removed `min-height: 100vh` on `body` so layout height follows content; tightened bottom padding on `body`, container, toggles row, and done/compact states.
+- Compact panel height reduced (`compactHeight` 310 → 278) so the window matches the shorter layout.
+
+### Changed
+- Footer: signature `margin-top` set to `0.85rem` (replacing `1cm`); signature vertical padding `0.20rem`.
+
+---
+
 ## v0.3.3 — 30 Mar 2026
 
 ### Fixed

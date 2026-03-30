@@ -17,7 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
     let reflectionWidth: CGFloat = 280
     let reflectionHeight: CGFloat = 610
     let compactWidth: CGFloat = 280
-    let compactHeight: CGFloat = 310
+    let compactHeight: CGFloat = 278
     let miniWidth: CGFloat = 150
     let miniHeight: CGFloat = 100
     let dragBarHeight: CGFloat = 28

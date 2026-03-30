@@ -14,10 +14,11 @@
     --border-light: rgba(31,20,15,0.06); --btn-bg: var(--green); --btn-fg: var(--beige);
   }
   * { margin:0; padding:0; box-sizing:border-box; }
+  html { height: 100%; }
   body {
     font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
-    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center;
-    padding-top: 0.8rem; padding-bottom: 0.65rem; overflow: hidden;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 0.8rem; padding-bottom: 0; overflow: hidden;
     transition: background-color 0.8s, color 0.8s;
     background-color: rgba(234,232,227,0.88); color: var(--brown);
   }
@@ -37,7 +38,7 @@
     --border-light: rgba(234,232,227,0.08); --btn-bg: var(--beige); --btn-fg: var(--brown);
   }
 
-  .container { text-align:center; padding:0.3rem 1.2rem 0.65rem; width:100%; }
+  .container { text-align:center; padding:0.3rem 1.2rem 0; width:100%; }
 
   /* Settings */
   .settings {
@@ -140,12 +141,11 @@
   }
   button.secondary:hover { opacity:0.6; }
 
-  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.65rem; padding-bottom:0.45rem; }
+  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.65rem; padding-bottom:0.2rem; }
   .signature {
-    font-size:0.55rem; opacity:0.35; margin-top:0.08rem; margin-bottom:0;
-    padding:0.28rem 0 0.5rem; font-family:'M PLUS Rounded 1c',sans-serif;
+    font-size:0.55rem; opacity:0.35; margin-top:0.85rem; margin-bottom:0;
+    padding:0.12rem 0 0; font-family:'M PLUS Rounded 1c',sans-serif;
     line-height:1.55;
-    position:relative; top:-0.12rem;
   }
   .toggles-row button {
     background:none; border:none; color:inherit; font-family:inherit;
@@ -225,15 +225,31 @@
   body.done { overflow-y: auto; }
   body.done::-webkit-scrollbar { width:6px; }
   body.done::-webkit-scrollbar-thumb { background:var(--border-light); border-radius:3px; }
-  body.done .container { padding-bottom:0.85rem; }
+  body.done .container { padding-bottom:0.15rem; }
 
   /* Compact mode — hide settings, objective, reflection during active session */
+  body.compact {
+    min-height: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
   body.compact .settings { display:none; }
   body.compact .objective-display { display:none; }
   body.compact .reflection-panel { display:none !important; }
   body.compact .done-message { display:none; }
   body.compact .session-summary { display:none; }
-  body.compact .container { padding-bottom:1.2rem; }
+  body.compact .container {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding-bottom: 0.06rem;
+  }
+  body.compact .signature {
+    margin-top: auto;
+    padding-top: 0.5rem;
+    padding-bottom: 0;
+  }
 
   /* Mini mode — only phase label + timer */
   body.mini .settings { display:none; }
@@ -701,7 +717,7 @@
   document.addEventListener('keydown',function(e){if(e.metaKey&&e.key==='Enter'){e.preventDefault();toggleStart();return;}if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
 
   // Update checker
-  var APP_VERSION='0.3.3';
+  var APP_VERSION='0.3.4';
   var GITHUB_REPO='akasatrio/reflection-pomodoro-timer';
   function compareVersions(a,b){
     var pa=a.replace(/^v/,'').split('.').map(Number),pb=b.replace(/^v/,'').split('.').map(Number);
