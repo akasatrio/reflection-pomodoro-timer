@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reflection Pomodoro Timer</title>
+<title>Pomodoro Timer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -14,11 +14,9 @@
     --border-light: rgba(31,20,15,0.06); --btn-bg: var(--green); --btn-fg: var(--beige);
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  html { height: 100%; }
   body {
     font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, sans-serif;
-    display: flex; align-items: flex-start; justify-content: center;
-    padding-top: 0.8rem; padding-bottom: 0; overflow: hidden;
+    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding-top: 0.8rem; overflow: hidden;
     transition: background-color 0.8s, color 0.8s;
     background-color: rgba(234,232,227,0.88); color: var(--brown);
   }
@@ -38,7 +36,7 @@
     --border-light: rgba(234,232,227,0.08); --btn-bg: var(--beige); --btn-fg: var(--brown);
   }
 
-  .container { text-align:center; padding:0.3rem 1.2rem 16px; width:100%; }
+  .container { text-align:center; padding:0.3rem 1.2rem; width:100%; }
 
   /* Settings */
   .settings {
@@ -96,12 +94,11 @@
   }
   .phase-label {
     font-size:0.9rem; font-weight:700; letter-spacing:0.12em;
-    text-transform:uppercase; opacity:0.5; margin-bottom:0.45rem; margin-top:-1.15rem;
+    text-transform:uppercase; opacity:0.5; margin-bottom:0.5rem; margin-top:-1rem;
   }
-  body.compact .phase-label { margin-top:-1.38rem; }
   .timer {
     font-family:'M PLUS Rounded 1c', sans-serif; font-size:4rem; font-weight:300; letter-spacing:0.06em;
-    line-height:1; margin-bottom:0.52rem; font-variant-numeric:tabular-nums;
+    line-height:1; margin-bottom:0.6rem; font-variant-numeric:tabular-nums;
   }
   .timer.pulse { animation: pulse 0.6s ease 3; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
@@ -112,7 +109,7 @@
   }
   .warning-label.visible { opacity:0.45; }
 
-  .progress-dots { display:flex; justify-content:center; gap:0.5rem; margin-bottom:1.05rem; }
+  .progress-dots { display:flex; justify-content:center; gap:0.5rem; margin-bottom:1.2rem; }
   .dot {
     width:10px; height:10px; border-radius:50%; background:currentColor; opacity:0.15;
     transition: opacity 0.5s, transform 0.4s;
@@ -122,7 +119,7 @@
   @keyframes dotPulse { 0%,100%{opacity:0.4} 50%{opacity:0.2} }
 
   /* Controls */
-  .controls { display:flex; gap:0; justify-content:center; margin-top:0.68rem; }
+  .controls { display:flex; gap:0; justify-content:center; margin-top:0.8rem; }
   button.primary {
     border:none; padding:0.5rem 1.3rem; font-size:0.58rem; font-weight:700;
     letter-spacing:0.14em; text-transform:uppercase; cursor:pointer;
@@ -142,12 +139,7 @@
   }
   button.secondary:hover { opacity:0.6; }
 
-  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.52rem; padding-bottom:0.2rem; }
-  .signature {
-    font-size:0.55rem; opacity:0.35; margin-top:0.85rem; margin-bottom:0;
-    padding:0.12rem 0 0; font-family:'M PLUS Rounded 1c',sans-serif;
-    line-height:1.2;
-  }
+  .toggles-row { display:flex; justify-content:center; gap:0.6rem; margin-top:0.8rem; padding-bottom:0.8rem; }
   .toggles-row button {
     background:none; border:none; color:inherit; font-family:inherit;
     font-size:0.44rem; font-weight:600; letter-spacing:0.12em;
@@ -211,48 +203,22 @@
     font-weight:600; opacity:1; font-size:0.54rem;
     letter-spacing:0.06em; text-transform:uppercase;
   }
-  .summary-scroll {
-    max-height:min(58vh, 420px);
-    overflow-y:auto;
-    margin-top:0.35rem;
-    padding-right:0.2rem;
-    -webkit-overflow-scrolling:touch;
+  .cycle-header {
+    font-size:0.44rem; font-weight:700; letter-spacing:0.14em;
+    text-transform:uppercase; opacity:0.35; margin-top:0.5rem; margin-bottom:0.2rem;
   }
-  .summary-scroll::-webkit-scrollbar { width:6px; }
-  .summary-scroll::-webkit-scrollbar-thumb {
-    background:var(--border); border-radius:3px;
-  }
+  .cycle-header:first-child { margin-top:0; }
 
   body.done { overflow-y: auto; }
-  body.done::-webkit-scrollbar { width:6px; }
-  body.done::-webkit-scrollbar-thumb { background:var(--border-light); border-radius:3px; }
-  body.done .container { padding-bottom:16px; }
+  body.done::-webkit-scrollbar { display:none; }
 
   /* Compact mode — hide settings, objective, reflection during active session */
-  body.compact {
-    min-height: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-  }
   body.compact .settings { display:none; }
   body.compact .objective-display { display:none; }
   body.compact .reflection-panel { display:none !important; }
   body.compact .done-message { display:none; }
   body.compact .session-summary { display:none; }
-  body.compact .container {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    padding-bottom: 16px;
-  }
-  body.compact .signature {
-    margin-top: auto;
-    padding-top: 0.5rem;
-    padding-bottom: 0;
-    margin-bottom: 0;
-  }
+  body.compact .container { padding-bottom:1.2rem; }
 
   /* Mini mode — only phase label + timer */
   body.mini .settings { display:none; }
@@ -281,17 +247,12 @@
 
   /* Drag region + window controls */
   .drag-bar { height:1.6rem; width:100%; position:relative; }
-  .app-bar-title {
-    position:absolute; left:0; top:50%; transform:translateY(-50%);
-    font-size:0.56rem; font-weight:600; letter-spacing:0.04em;
-    opacity:0.42; pointer-events:none;
-    padding-left:0.1rem; max-width:calc(100% - 5.2rem);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  .app-bar-icon {
+    position:absolute; left:0.1rem; top:50%; transform:translateY(-50%);
+    width:14px; height:14px; opacity:0.35; pointer-events:none;
   }
-  body.work .app-bar-title { opacity:0.38; }
-  body.break .app-bar-title { opacity:0.35; }
-  body.done .app-bar-title { opacity:0.4; }
-  body.mini .app-bar-title { display:none; }
+  .app-bar-icon svg { width:100%; height:100%; fill:currentColor; }
+  body.mini .app-bar-icon { display:none; }
   .window-controls { display:flex; justify-content:flex-end; gap:0.2rem; position:absolute; right:0; top:0; }
   .win-btn { background:none; border:none; cursor:pointer; font-size:1rem; line-height:1; width:1.5rem; height:1.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--green); opacity:0.5; transition:opacity 0.15s, background 0.15s, color 0.15s; padding:0; font-family:'M PLUS Rounded 1c',sans-serif; position:relative; z-index:100; }
   .win-btn:hover { opacity:0.8; background:var(--surface); }
@@ -310,12 +271,27 @@
   .update-banner.visible { display:block; }
   .update-banner.updating { pointer-events:none; opacity:0.4; }
   body.compact .update-banner, body.mini .update-banner { display:none !important; }
+
+  /* Funny sounds upload panel */
+  .funny-sounds-panel { display:none; margin-top:0.4rem; padding:0.5rem 0; border-top:1px solid var(--border-light); }
+  .funny-sounds-panel.visible { display:block; }
+  .sound-slot { display:flex; align-items:center; gap:0.3rem; padding:0.2rem 0; font-size:0.5rem; }
+  .sound-slot-label { flex:1; text-align:left; font-weight:600; letter-spacing:0.06em; opacity:0.5; font-size:0.44rem; text-transform:uppercase; }
+  .sound-slot-name { font-size:0.44rem; opacity:0.35; max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sound-slot button {
+    background:none; border:1px solid var(--border-light); color:inherit; font-family:inherit;
+    font-size:0.42rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
+    padding:0.15rem 0.35rem; cursor:pointer; opacity:0.4; transition:opacity 0.15s;
+  }
+  .sound-slot button:hover { opacity:0.7; }
+  .sound-error { font-size:0.42rem; color:#c0392b; opacity:0.7; margin-top:0.15rem; }
+  body.compact .funny-sounds-panel, body.mini .funny-sounds-panel { display:none !important; }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="drag-bar">
-    <span class="app-bar-title">RefPom Timer</span>
+    <span class="app-bar-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="13" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="13" x2="12" y2="8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="13" x2="15.5" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="10" y1="2" x2="14" y2="2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="2" x2="12" y2="4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
     <div class="window-controls">
       <button class="win-btn mini-btn" onclick="toggleMiniMode()" title="Mini mode">&#x2022;</button>
       <button class="win-btn minimize-btn" onclick="hideToMenuBar()" title="Minimize to menu bar">&#x2013;</button>
@@ -335,9 +311,9 @@
       <div class="setting-field"><label>Long</label><input type="number" id="inputLong" value="15" min="0" max="60"></div>
     </div>
     <div class="settings-grid">
-      <div class="setting-field"><label>Sessions</label><input type="number" id="inputSessionSize" value="4" min="1" max="20" title="Work blocks per cycle"></div>
-      <div class="setting-field"><label>Long @</label><input type="number" id="inputLongEvery" value="4" min="1" max="20" title="Long break after every N sessions in a cycle"></div>
-      <div class="setting-field"><label>Cycles</label><input type="number" id="inputCycles" value="2" min="1" max="20" title="How many full session rounds"></div>
+      <div class="setting-field"><label>Sessions</label><input type="number" id="inputSession" value="4" min="1" max="20"></div>
+      <div class="setting-field"><label>Long @</label><input type="number" id="inputLongEvery" value="4" min="1" max="20"></div>
+      <div class="setting-field"><label>Cycles</label><input type="number" id="inputCycles" value="1" min="1" max="10"></div>
     </div>
     <div class="objective-row">
       <input type="text" id="inputObjective" placeholder="What are you working on?" onkeydown="if(event.key==='Enter')applySettings()">
@@ -368,10 +344,8 @@
   <!-- Done -->
   <div class="done-message" id="doneMsg">Session complete. Well done.</div>
   <div class="session-summary" id="sessionSummary">
-    <div class="section-title" id="summarySectionTitle">Session Summary</div>
-    <div class="summary-scroll" id="summaryScroll">
-      <div id="summaryContent"></div>
-    </div>
+    <div class="section-title">Session Summary</div>
+    <div id="summaryContent"></div>
   </div>
 
   <div class="controls" id="controls">
@@ -383,13 +357,48 @@
     <button onclick="toggleMute()" id="muteBtn">Sound On</button>
     <button onclick="toggleFunnyMode()" id="funnyBtn">Funny Mode</button>
   </div>
-  <div class="signature">&copy; Baradhio with Claude Code</div>
+  <div class="funny-sounds-panel" id="funnySoundsPanel">
+    <div class="section-title">Funny Mode Sounds</div>
+    <div class="sound-slot" data-slot="sessionStart">
+      <span class="sound-slot-label">Session Start</span>
+      <span class="sound-slot-name" id="soundName_sessionStart"></span>
+      <button onclick="previewSound('sessionStart')" id="soundPlay_sessionStart" style="display:none">&#9654;</button>
+      <button onclick="removeSound('sessionStart')" id="soundRemove_sessionStart" style="display:none">&times;</button>
+      <button onclick="document.getElementById('soundFile_sessionStart').click()" id="soundUpload_sessionStart">Upload</button>
+      <input type="file" id="soundFile_sessionStart" accept=".mp3,.wav,.m4a,.ogg,audio/*" style="display:none" onchange="handleSoundUpload('sessionStart',this)">
+    </div>
+    <div class="sound-slot" data-slot="twoMinReminder">
+      <span class="sound-slot-label">2-Min Reminder</span>
+      <span class="sound-slot-name" id="soundName_twoMinReminder"></span>
+      <button onclick="previewSound('twoMinReminder')" id="soundPlay_twoMinReminder" style="display:none">&#9654;</button>
+      <button onclick="removeSound('twoMinReminder')" id="soundRemove_twoMinReminder" style="display:none">&times;</button>
+      <button onclick="document.getElementById('soundFile_twoMinReminder').click()" id="soundUpload_twoMinReminder">Upload</button>
+      <input type="file" id="soundFile_twoMinReminder" accept=".mp3,.wav,.m4a,.ogg,audio/*" style="display:none" onchange="handleSoundUpload('twoMinReminder',this)">
+    </div>
+    <div class="sound-slot" data-slot="sessionEnd">
+      <span class="sound-slot-label">Session End</span>
+      <span class="sound-slot-name" id="soundName_sessionEnd"></span>
+      <button onclick="previewSound('sessionEnd')" id="soundPlay_sessionEnd" style="display:none">&#9654;</button>
+      <button onclick="removeSound('sessionEnd')" id="soundRemove_sessionEnd" style="display:none">&times;</button>
+      <button onclick="document.getElementById('soundFile_sessionEnd').click()" id="soundUpload_sessionEnd">Upload</button>
+      <input type="file" id="soundFile_sessionEnd" accept=".mp3,.wav,.m4a,.ogg,audio/*" style="display:none" onchange="handleSoundUpload('sessionEnd',this)">
+    </div>
+    <div class="sound-slot" data-slot="cycleEnd">
+      <span class="sound-slot-label">Cycle End</span>
+      <span class="sound-slot-name" id="soundName_cycleEnd"></span>
+      <button onclick="previewSound('cycleEnd')" id="soundPlay_cycleEnd" style="display:none">&#9654;</button>
+      <button onclick="removeSound('cycleEnd')" id="soundRemove_cycleEnd" style="display:none">&times;</button>
+      <button onclick="document.getElementById('soundFile_cycleEnd').click()" id="soundUpload_cycleEnd">Upload</button>
+      <input type="file" id="soundFile_cycleEnd" accept=".mp3,.wav,.m4a,.ogg,audio/*" style="display:none" onchange="handleSoundUpload('cycleEnd',this)">
+    </div>
+  </div>
+  <div style="font-size:0.55rem;opacity:0.35;padding:0.8rem 0 0.3rem;font-family:'M PLUS Rounded 1c',sans-serif;">&copy; Baradhio with Claude Code</div>
 </div>
 
 <script>
-  let SESSION_SIZE=4, CYCLES=2, LONG_EVERY=4, WORK=25*60, SHORT=5*60, LONG=15*60;
-  let phase='idle', timeLeft=WORK, running=false, interval=null, count=0, cycleIndex=0;
-  let sessionNotes=[], warningShown=false, reflectionShown=false, noteSubmittedThisPomodoro=false;
+  let SESSION=4, LONG_EVERY=4, CYCLES=1, WORK=25*60, SHORT=5*60, LONG=15*60;
+  let phase='idle', timeLeft=WORK, running=false, interval=null, count=0, currentCycle=0;
+  let allNotes=[], currentCycleNotes=[], warningShown=false, reflectionShown=false, noteSubmittedThisPomodoro=false;
   let muted=false, funnyMode=false;
 
   // Bridge to Swift panel control
@@ -400,7 +409,7 @@
   let miniMode=false;
   function enterCompact(){document.body.classList.add('compact');document.body.classList.remove('mini');miniMode=false;panelMsg('sessionStart');}
   function expandFull(){document.body.classList.remove('compact');document.body.classList.remove('mini');miniMode=false;panelMsg('sessionExpand');}
-  function exitCompact(){document.body.classList.remove('compact');document.body.classList.remove('mini');miniMode=false;panelMsg('sessionStop');}
+  function exitCompact(){document.body.classList.remove('compact');document.body.classList.remove('mini');miniMode=false;panelMsg(funnyMode?'funnySoundsShow':'sessionStop');}
   function enterMini(){miniMode=true;document.body.classList.remove('compact');document.body.classList.add('mini');panelMsg('sessionMini');}
   function exitMini(){miniMode=false;document.body.classList.remove('mini');document.body.classList.add('compact');panelMsg('sessionStart');}
   function toggleMiniMode(){if(miniMode)exitMini();else enterMini();}
@@ -419,8 +428,6 @@
     noteSavedBadge=document.getElementById('noteSavedBadge'),
     warningLabel=document.getElementById('warningLabel'),
     summaryEl=document.getElementById('sessionSummary'),
-    summarySectionTitle=document.getElementById('summarySectionTitle'),
-    summaryScroll=document.getElementById('summaryScroll'),
     summaryContent=document.getElementById('summaryContent'),
     settingsPanel=document.getElementById('settingsPanel'),
     progressDots=document.getElementById('progressDots');
@@ -442,21 +449,73 @@
       o3.connect(g3);g3.connect(ctx.destination);o3.start(t);o3.stop(t+0.3);
     }}catch(e){}
   }
-  function celebrationBells(){bellStrike(3,0);bellStrike(2,1.0);bellStrike(1,1.8);}
+  function celebrationBells(){if(!playCustomSound('cycleEnd')){bellStrike(3,0);bellStrike(2,1.0);bellStrike(1,1.8);}}
 
   let funnyAudio=null;
   function playGameBoySound(){
     if(muted)return;
     try{if(funnyAudio)funnyAudio.pause();funnyAudio=new Audio('sound effect/nintendo-game-boy-startup.mp3');funnyAudio.play().catch(function(){bellStrike(1,0);});}catch(e){bellStrike(1,0);}
   }
-  function playFunnySound(){
-    if(muted||!funnyMode)return;
-    // TODO: dedicated funny mode sound later
-    playGameBoySound();
+  // IndexedDB for custom funny mode sounds
+  var MAX_SOUND_SIZE=5*1024*1024;
+  var customSoundCache={sessionStart:null,twoMinReminder:null,sessionEnd:null,cycleEnd:null};
+  var previewAudio=null;
+  function openSoundDB(){
+    return new Promise(function(resolve,reject){
+      var req=indexedDB.open('PomodoroSounds',1);
+      req.onupgradeneeded=function(e){e.target.result.createObjectStore('customSounds',{keyPath:'slot'});};
+      req.onsuccess=function(e){resolve(e.target.result);};
+      req.onerror=function(){reject(req.error);};
+    });
   }
-  function playWarningSound(){if(muted)return;playGameBoySound();}
-  function playSessionEndSound(){if(muted)return;playGameBoySound();}
-  function playTransitionSound(){if(muted)return;playGameBoySound();}
+  function saveCustomSound(slot,file){
+    return openSoundDB().then(function(db){
+      return new Promise(function(resolve,reject){
+        var tx=db.transaction('customSounds','readwrite');
+        tx.objectStore('customSounds').put({slot:slot,fileName:file.name,mimeType:file.type,blob:file});
+        tx.oncomplete=function(){resolve();};tx.onerror=function(){reject(tx.error);};
+      });
+    });
+  }
+  function removeCustomSoundDB(slot){
+    return openSoundDB().then(function(db){
+      return new Promise(function(resolve,reject){
+        var tx=db.transaction('customSounds','readwrite');
+        tx.objectStore('customSounds').delete(slot);
+        tx.oncomplete=function(){resolve();};tx.onerror=function(){reject(tx.error);};
+      });
+    });
+  }
+  function loadAllCustomSounds(){
+    return openSoundDB().then(function(db){
+      return new Promise(function(resolve,reject){
+        var tx=db.transaction('customSounds','readonly');
+        var req=tx.objectStore('customSounds').getAll();
+        req.onsuccess=function(){
+          (req.result||[]).forEach(function(entry){
+            if(customSoundCache[entry.slot]&&customSoundCache[entry.slot].objectURL)URL.revokeObjectURL(customSoundCache[entry.slot].objectURL);
+            customSoundCache[entry.slot]={fileName:entry.fileName,objectURL:URL.createObjectURL(entry.blob)};
+          });
+          resolve();
+        };
+        req.onerror=function(){resolve();};
+      });
+    }).catch(function(){});
+  }
+  function playCustomSound(slot){
+    if(muted)return false;
+    if(!funnyMode||!customSoundCache[slot])return false;
+    try{
+      if(previewAudio)previewAudio.pause();
+      previewAudio=new Audio(customSoundCache[slot].objectURL);
+      previewAudio.play().catch(function(){});
+      return true;
+    }catch(e){return false;}
+  }
+
+  function playWarningSound(){if(muted)return;if(!playCustomSound('twoMinReminder'))playGameBoySound();}
+  function playSessionEndSound(){if(muted)return;if(!playCustomSound('sessionEnd'))playGameBoySound();}
+  function playTransitionSound(){if(muted)return;if(!playCustomSound('sessionStart'))playGameBoySound();}
 
   function requestNotifications(){if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();}
   function notify(t,b){if('Notification'in window&&Notification.permission==='granted')new Notification(t,{body:b,silent:true});}
@@ -465,39 +524,16 @@
   function formatDate(){var d=new Date(),m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();}
   function formatTime(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 
-  function buildDots(){progressDots.innerHTML='';for(var i=0;i<SESSION_SIZE;i++){var d=document.createElement('div');d.className='dot';d.id='d'+i;if(i<count)d.classList.add('filled');else if(i===count&&phase==='work')d.classList.add('active');progressDots.appendChild(d);}}
-  function updateDots(){for(var i=0;i<SESSION_SIZE;i++){var d=document.getElementById('d'+i);if(d){d.classList.toggle('filled',i<count);d.classList.toggle('active',i===count&&(phase==='work'||phase==='shortBreak'||phase==='longBreak'||phase==='cycleBreak'));}}}
+  function buildDots(){
+    progressDots.innerHTML='';
+    if(CYCLES>1){var lbl=document.createElement('span');lbl.id='cycleLabel';lbl.style.cssText='font-size:0.44rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;opacity:0.3;margin-right:0.4rem;line-height:10px;';lbl.textContent='Cycle '+(currentCycle+1)+'/'+CYCLES;progressDots.appendChild(lbl);}
+    for(var i=0;i<SESSION;i++){var d=document.createElement('div');d.className='dot';d.id='d'+i;if(i<count)d.classList.add('filled');else if(i===count&&phase==='work')d.classList.add('active');progressDots.appendChild(d);}
+  }
+  function updateDots(){
+    for(var i=0;i<SESSION;i++){var d=document.getElementById('d'+i);if(d){d.classList.toggle('filled',i<count);d.classList.toggle('active',i===count&&(phase==='work'||phase==='shortBreak'||phase==='longBreak'||phase==='cycleBreak'));}}
+    var lbl=document.getElementById('cycleLabel');if(lbl)lbl.textContent='Cycle '+(currentCycle+1)+'/'+CYCLES;
+  }
   function updateTitle(){document.title=(phase==='idle'||phase==='done')?'Pomodoro Timer':fmt(timeLeft)+' — Pomodoro';}
-  function interCycleDuration(){return LONG>0?LONG:SHORT;}
-  function notifyWorkBlockDone(){
-    notify('Pomodoro Complete','Session '+ (count)+' of '+SESSION_SIZE+' — cycle '+(cycleIndex+1)+' of '+CYCLES);
-  }
-  function noteKeyMatches(n){return n.cycle===cycleIndex&&n.workIndex===count+1;}
-  function renderSummaryHtml(notes){
-    var html='';
-    notes.forEach(function(n){
-      var h=n.title||('Session '+n.workIndex);
-      html+='<div class="summary-item"><strong>'+escapeHtml(h)+'</strong> ('+n.time+')<br>'+escapeHtml(n.text)+'</div>';
-    });
-    summaryContent.innerHTML=html;
-  }
-  function documentContentHeight(){
-    var de=document.documentElement, b=document.body;
-    return Math.max(
-      de.scrollHeight||0, b.scrollHeight||0,
-      de.offsetHeight||0, b.offsetHeight||0
-    );
-  }
-  function requestPanelFitDone(){
-    requestAnimationFrame(function(){
-      var h=documentContentHeight();
-      panelMsg('sessionDone',{height:h});
-      requestAnimationFrame(function(){
-        var h2=documentContentHeight();
-        if(h2>h)panelMsg('sessionDone',{height:h2});
-      });
-    });
-  }
 
   function applySettings(){
     if(running)return;exitCompact();
@@ -505,15 +541,14 @@
       s=parseInt(document.getElementById('inputShort').value)||5,
       l=parseInt(document.getElementById('inputLong').value);
     if(isNaN(l))l=15;
-    var ss=parseInt(document.getElementById('inputSessionSize').value)||4,
-      cy=parseInt(document.getElementById('inputCycles').value)||2,
+    var ss=parseInt(document.getElementById('inputSession').value)||4,
       le=parseInt(document.getElementById('inputLongEvery').value)||4,
+      cy=parseInt(document.getElementById('inputCycles').value)||1,
       obj=document.getElementById('inputObjective').value.trim();
-    WORK=w*60;SHORT=s*60;LONG=l*60;
-    SESSION_SIZE=Math.max(1,Math.min(20,ss));CYCLES=Math.max(1,Math.min(20,cy));LONG_EVERY=Math.max(1,Math.min(20,le));
-    document.getElementById('inputSessionSize').value=SESSION_SIZE;document.getElementById('inputCycles').value=CYCLES;document.getElementById('inputLongEvery').value=LONG_EVERY;
-    objDisp.textContent=obj;count=0;cycleIndex=0;phase='idle';timeLeft=WORK;running=false;
-    sessionNotes=[];reflectionShown=false;noteSubmittedThisPomodoro=false;
+    WORK=w*60;SHORT=s*60;LONG=l*60;SESSION=Math.max(1,Math.min(20,ss));LONG_EVERY=Math.max(1,Math.min(20,le));CYCLES=Math.max(1,Math.min(10,cy));
+    document.getElementById('inputSession').value=SESSION;document.getElementById('inputLongEvery').value=LONG_EVERY;document.getElementById('inputCycles').value=CYCLES;
+    objDisp.textContent=obj;count=0;currentCycle=0;phase='idle';timeLeft=WORK;running=false;
+    allNotes=[];currentCycleNotes=[];reflectionShown=false;noteSubmittedThisPomodoro=false;
     document.body.className='';pLabel.textContent='Ready';
     display.textContent=fmt(WORK);
     doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
@@ -525,49 +560,18 @@
     document.getElementById('inputWork').value=25;
     document.getElementById('inputShort').value=5;
     document.getElementById('inputLong').value=15;
-    document.getElementById('inputSessionSize').value=4;
+    document.getElementById('inputSession').value=4;
     document.getElementById('inputLongEvery').value=4;
-    document.getElementById('inputCycles').value=2;
+    document.getElementById('inputCycles').value=1;
     applySettings();
   }
-  function saveSettings(){try{localStorage.setItem('pomodoro_settings',JSON.stringify({work:WORK,short:SHORT,long:LONG,sessionSize:SESSION_SIZE,cycles:CYCLES,longEvery:LONG_EVERY}));}catch(e){}}
-  function loadSettings(){try{var s=JSON.parse(localStorage.getItem('pomodoro_settings'));if(!s)return;WORK=s.work||25*60;SHORT=s.short||5*60;LONG=(typeof s.long==='number')?s.long:15*60;SESSION_SIZE=(s.sessionSize!=null)?s.sessionSize:((s.total!=null)?s.total:4);CYCLES=(s.cycles!=null)?s.cycles:2;LONG_EVERY=s.longEvery||4;SESSION_SIZE=Math.max(1,Math.min(20,SESSION_SIZE));CYCLES=Math.max(1,Math.min(20,CYCLES));document.getElementById('inputWork').value=Math.round(WORK/60);document.getElementById('inputShort').value=Math.round(SHORT/60);document.getElementById('inputLong').value=Math.round(LONG/60);document.getElementById('inputSessionSize').value=SESSION_SIZE;document.getElementById('inputCycles').value=CYCLES;document.getElementById('inputLongEvery').value=LONG_EVERY;timeLeft=WORK;display.textContent=fmt(WORK);}catch(e){}}
+  function saveSettings(){try{localStorage.setItem('pomodoro_settings',JSON.stringify({work:WORK,short:SHORT,long:LONG,session:SESSION,longEvery:LONG_EVERY,cycles:CYCLES}));}catch(e){}}
+  function loadSettings(){try{var s=JSON.parse(localStorage.getItem('pomodoro_settings'));if(!s)return;WORK=s.work||25*60;SHORT=s.short||5*60;LONG=(typeof s.long==='number')?s.long:15*60;SESSION=s.session||s.total||4;LONG_EVERY=s.longEvery||4;CYCLES=s.cycles||1;SESSION=Math.max(1,Math.min(20,SESSION));CYCLES=Math.max(1,Math.min(10,CYCLES));document.getElementById('inputWork').value=Math.round(WORK/60);document.getElementById('inputShort').value=Math.round(SHORT/60);document.getElementById('inputLong').value=Math.round(LONG/60);document.getElementById('inputSession').value=SESSION;document.getElementById('inputLongEvery').value=LONG_EVERY;document.getElementById('inputCycles').value=CYCLES;timeLeft=WORK;display.textContent=fmt(WORK);}catch(e){}}
 
   function toggleStart(){
-    if(phase==='idle'){startWork();return;}if(phase==='done')return;
+    if(phase==='idle'){startWork();return;}if(phase==='done')return;if(phase==='cycleBreak'&&!running){startNextCycle();return;}
     if(running){clearInterval(interval);running=false;controls.querySelector('.primary').textContent='Resume';}
     else{running=true;controls.querySelector('.primary').textContent='Pause';interval=setInterval(tick,1000);}
-  }
-  function advanceAfterWorkBlock(){
-    if(count>=SESSION_SIZE){
-      if(cycleIndex+1<CYCLES){startCycleIntermission();}
-      else{showDoneFinal();}
-    }else{
-      var isLong=(LONG>0)&&(count%LONG_EVERY===0);
-      startBreak(isLong);
-    }
-  }
-  function startCycleIntermission(){
-    exitCompact();
-    phase='cycleBreak';timeLeft=interCycleDuration();running=true;
-    document.body.className='break';
-    pLabel.textContent='Cycle break';
-    display.textContent=fmt(timeLeft);
-    doneMsg.textContent='Cycle '+(cycleIndex+1)+' complete — great work. Take a longer pause, then continue when you’re ready.';
-    doneMsg.classList.add('visible');
-    summarySectionTitle.textContent='Notes this cycle';
-    var cycleNotes=sessionNotes.filter(function(n){return n.cycle===cycleIndex;});
-    if(cycleNotes.length>0){renderSummaryHtml(cycleNotes);summaryEl.classList.add('visible');}
-    else{summaryContent.innerHTML='';summaryEl.classList.remove('visible');}
-    warningLabel.classList.remove('visible');warningLabel.textContent='';
-    reflectionPanel.classList.remove('visible');noteSavedBadge.classList.remove('visible');
-    settingsPanel.style.display='';renderControls('Pause');
-    clearInterval(interval);interval=setInterval(tick,1000);updateTitle();
-    requestPanelFitDone();
-  }
-  function finishCycleIntermission(){
-    doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');summaryContent.innerHTML='';
-    count=0;cycleIndex++;playTransitionSound();startWork(true);
   }
   function startWork(skipSound){
     phase='work';timeLeft=WORK;running=true;warningShown=false;reflectionShown=false;noteSubmittedThisPomodoro=false;
@@ -595,14 +599,15 @@
     settingsPanel.style.display='none';
     reflectionPanel.classList.add('visible');reflectionTitle.focus();
   }
+  function noteMatches(n){return n.cycle===currentCycle&&n.session===count+1;}
   function submitReflection(){
     var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
     if(!text&&!title){showNoteStatus('Write something first');return;}
     if(noteSubmittedThisPomodoro){
-      for(var i=sessionNotes.length-1;i>=0;i--){if(noteKeyMatches(sessionNotes[i])){sessionNotes[i].title=title;sessionNotes[i].text=text;sessionNotes[i].time=formatTime();break;}}
+      for(var i=currentCycleNotes.length-1;i>=0;i--){if(noteMatches(currentCycleNotes[i])){currentCycleNotes[i].title=title;currentCycleNotes[i].text=text;currentCycleNotes[i].time=formatTime();break;}}
       showNoteStatus('Note updated');
     }else{
-      sessionNotes.push({workIndex:count+1,cycle:cycleIndex,title:title,text:text,time:formatTime()});
+      currentCycleNotes.push({session:count+1,cycle:currentCycle,title:title,text:text,time:formatTime()});
       noteSubmittedThisPomodoro=true;showNoteStatus('Note saved');
     }
     noteSavedBadge.classList.add('visible');
@@ -610,9 +615,9 @@
   function autoSaveReflection(){
     var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
     if((text||title)&&!noteSubmittedThisPomodoro){
-      sessionNotes.push({workIndex:count+1,cycle:cycleIndex,title:title,text:text,time:formatTime()});noteSubmittedThisPomodoro=true;
+      currentCycleNotes.push({session:count+1,cycle:currentCycle,title:title,text:text,time:formatTime()});noteSubmittedThisPomodoro=true;
     }else if((text||title)&&noteSubmittedThisPomodoro){
-      for(var i=sessionNotes.length-1;i>=0;i--){if(noteKeyMatches(sessionNotes[i])){sessionNotes[i].title=title;sessionNotes[i].text=text;sessionNotes[i].time=formatTime();break;}}
+      for(var i=currentCycleNotes.length-1;i>=0;i--){if(noteMatches(currentCycleNotes[i])){currentCycleNotes[i].title=title;currentCycleNotes[i].text=text;currentCycleNotes[i].time=formatTime();break;}}
     }
   }
   function tick(){
@@ -630,18 +635,15 @@
       autoSaveReflection();reflectionPanel.classList.remove('visible');
       warningLabel.classList.remove('visible');warningLabel.textContent='';
       count++;updateDots();playSessionEndSound();
-      notifyWorkBlockDone();
-      advanceAfterWorkBlock();
+      notify('Session '+count+' of '+SESSION+(CYCLES>1?' (cycle '+(currentCycle+1)+')':'')+' done');
+      advanceAfterWork();
     }else if(phase==='cycleBreak'){
-      var autoCy=localStorage.getItem('autoStartAfterBreak')==='1';
-      notify('Cycle break over',autoCy?('Starting cycle '+(cycleIndex+2)+'\u2026'):'Press Start when you\'re ready for the next cycle.');
-      var autoStart=autoCy;
-      if(autoStart){finishCycleIntermission();}
-      else{playTransitionSound();count=0;cycleIndex++;phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';
-        doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');summaryContent.innerHTML='';
-        updateDots();display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
+      notify('Cycle break over','Ready for cycle '+(currentCycle+1));
+      var autoStart=localStorage.getItem('autoStartAfterBreak')==='1';
+      if(autoStart){startNextCycle();}
+      else{playTransitionSound();display.textContent='00:00';running=false;renderControls('Start');}
     }else{
-      notify('Break Over','Ready for the next pomodoro?');
+      notify('Break Over','Ready for the next session?');
       var autoStart=localStorage.getItem('autoStartAfterBreak')==='1';
       if(autoStart){playTransitionSound();startWork(true);}
       else{playTransitionSound();phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';
@@ -653,34 +655,70 @@
     clearInterval(interval);running=false;reflectionPanel.classList.remove('visible');
     noteSavedBadge.classList.remove('visible');warningLabel.classList.remove('visible');
     warningLabel.textContent='';reflectionShown=false;noteSubmittedThisPomodoro=false;
-    if(phase==='shortBreak')timeLeft=SHORT;else if(phase==='longBreak')timeLeft=LONG;else if(phase==='cycleBreak')timeLeft=interCycleDuration();else timeLeft=WORK;
+    if(phase==='shortBreak')timeLeft=SHORT;else if(phase==='longBreak')timeLeft=LONG;else if(phase==='cycleBreak')timeLeft=LONG>0?LONG:SHORT;else timeLeft=WORK;
     display.textContent=fmt(timeLeft);renderControls('Start');updateTitle();
+  }
+  function advanceAfterWork(){
+    if(count>=SESSION){
+      allNotes.push([].concat(currentCycleNotes));currentCycle++;
+      if(currentCycle>=CYCLES)showDone();
+      else showCycleBreak();
+    }else{
+      var isLong=(LONG>0)&&(LONG_EVERY>0)&&(count%LONG_EVERY===0);
+      startBreak(isLong);
+    }
   }
   function skipPhase(){
     clearInterval(interval);running=false;
-    if(phase==='work'){autoSaveReflection();reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');count++;updateDots();playSessionEndSound();notifyWorkBlockDone();advanceAfterWorkBlock();}
-    else if(phase==='cycleBreak'){finishCycleIntermission();}
+    if(phase==='work'){autoSaveReflection();reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');count++;updateDots();playSessionEndSound();advanceAfterWork();}
+    else if(phase==='cycleBreak'){startNextCycle();}
     else if(phase==='shortBreak'||phase==='longBreak'){exitCompact();phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';updateDots();display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
     else startWork();
   }
-  function showDoneFinal(){
+  function showCycleBreak(){
+    exitCompact();
+    phase='cycleBreak';document.body.className='done';
+    pLabel.textContent='Cycle '+currentCycle+' done';
+    timeLeft=LONG>0?LONG:SHORT;display.textContent=fmt(timeLeft);running=true;
+    doneMsg.textContent='Cycle '+currentCycle+' of '+CYCLES+' complete. Take a break.';
+    doneMsg.classList.add('visible');reflectionPanel.classList.remove('visible');settingsPanel.style.display='';
+    if(currentCycleNotes.length>0){var html='';currentCycleNotes.forEach(function(n){var h=n.title||('Session '+n.session);html+='<div class="summary-item"><strong>'+escapeHtml(h)+'</strong> ('+n.time+')<br>'+escapeHtml(n.text)+'</div>';});summaryContent.innerHTML=html;summaryEl.classList.add('visible');}
+    else{summaryContent.innerHTML='';summaryEl.classList.remove('visible');}
+    controls.innerHTML='<button class="primary" onclick="startNextCycle()">Continue</button><button class="secondary" onclick="copyCycleNotes()">Copy Notes</button>';
+    clearInterval(interval);interval=setInterval(tick,1000);updateTitle();
+    celebrationBells();
+    notify('Cycle Complete','Cycle '+currentCycle+' of '+CYCLES+' done.');
+    requestAnimationFrame(function(){panelMsg('sessionDone',{height:document.documentElement.scrollHeight});});
+  }
+  function startNextCycle(){
+    clearInterval(interval);running=false;
+    currentCycleNotes=[];count=0;
+    doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
+    buildDots();startWork();
+  }
+  function showDone(){
     exitCompact();
     phase='done';document.body.className='done';pLabel.textContent='Done';display.textContent='00:00';
-    doneMsg.textContent='All cycles complete — outstanding focus. Here’s everything you captured.';
+    doneMsg.textContent=CYCLES>1?'All '+CYCLES+' cycles complete. Well done.':'Session complete. Well done.';
     doneMsg.classList.add('visible');reflectionPanel.classList.remove('visible');settingsPanel.style.display='';
-    summarySectionTitle.textContent='All notes';
-    if(sessionNotes.length>0){renderSummaryHtml(sessionNotes);summaryEl.classList.add('visible');}
-    else{summaryContent.innerHTML='';summaryEl.classList.remove('visible');}
+    var flat=[];allNotes.forEach(function(cy){flat=flat.concat(cy);});
+    if(flat.length>0){
+      var html='';
+      if(CYCLES>1){allNotes.forEach(function(cycleNotes,idx){html+='<div class="cycle-header">Cycle '+(idx+1)+'</div>';cycleNotes.forEach(function(n){var h=n.title||('Session '+n.session);html+='<div class="summary-item"><strong>'+escapeHtml(h)+'</strong> ('+n.time+')<br>'+escapeHtml(n.text)+'</div>';});});}
+      else{flat.forEach(function(n){var h=n.title||('Session '+n.session);html+='<div class="summary-item"><strong>'+escapeHtml(h)+'</strong> ('+n.time+')<br>'+escapeHtml(n.text)+'</div>';});}
+      summaryContent.innerHTML=html;summaryEl.classList.add('visible');
+    }
     controls.innerHTML='<button class="primary" onclick="copyAllNotes()">Copy All</button><button class="secondary" onclick="restart()">Again</button>';
-    updateTitle();
-    notify('All complete!',''+CYCLES+' cycle'+(CYCLES!==1?'s':'')+' ('+SESSION_SIZE+' sessions each) finished.');
-    requestPanelFitDone();
+    updateTitle();celebrationBells();
+    notify('Session Complete!',CYCLES>1?'All '+CYCLES+' cycles done.':'All '+SESSION+' sessions done. Well done!');
+    requestAnimationFrame(function(){panelMsg('sessionDone',{height:document.documentElement.scrollHeight});});
   }
   function restart(){
     exitCompact();
-    count=0;cycleIndex=0;phase='idle';timeLeft=WORK;running=false;sessionNotes=[];warningShown=false;
+    count=0;currentCycle=0;phase='idle';timeLeft=WORK;running=false;
+    allNotes=[];currentCycleNotes=[];warningShown=false;
     reflectionShown=false;noteSubmittedThisPomodoro=false;document.body.className='';
-    pLabel.textContent='Ready';    display.textContent=fmt(WORK);doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
+    pLabel.textContent='Ready';display.textContent=fmt(WORK);doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
     reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');
     warningLabel.textContent='';noteSavedBadge.classList.remove('visible');
     renderControls('Start');buildDots();updateTitle();
@@ -689,38 +727,89 @@
 
   function escapeHtml(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
   function getObjective(){return document.getElementById('inputObjective').value.trim()||'No objective set';}
-  function generateSingleMarkdown(n){
-    var h=n.title||('Session '+n.workIndex);
-    var cyc=(n.cycle!=null)?('\n**Cycle:** '+(n.cycle+1)):'';
-    return'## '+h+' — '+formatDate()+' '+n.time+'\n**Objective:** '+getObjective()+cyc+'\n\n'+n.text+'\n';
-  }
+  function generateSingleMarkdown(n){var h=n.title||('Session '+n.session);return'## '+h+' — '+formatDate()+' '+n.time+'\n**Objective:** '+getObjective()+'\n\n'+n.text+'\n';}
   function generateAllMarkdown(){
-    var wmin=Math.round(WORK/60),totalWorkMin=SESSION_SIZE*CYCLES*wmin;
-    var md='# Pomodoro run — '+formatDate()+'\n**Objective:** '+getObjective()+'\n**Plan:** '+CYCLES+' cycle'+(CYCLES!==1?'s':'')+' × '+SESSION_SIZE+' sessions × '+wmin+' min ('+totalWorkMin+' min work)\n\n';
-    sessionNotes.forEach(function(n){var h=n.title||('Session '+n.workIndex);md+='### '+h+' — cycle '+(n.cycle+1)+' ('+n.time+')\n'+n.text+'\n\n';});
+    var wmin=Math.round(WORK/60),total=SESSION*CYCLES;
+    var md='# Pomodoro Session — '+formatDate()+'\n**Objective:** '+getObjective()+'\n**Duration:** '+(total*wmin)+' min ('+total+' x '+wmin+' min)\n\n';
+    var flat=[];allNotes.forEach(function(cy){flat=flat.concat(cy);});
+    if(CYCLES>1){allNotes.forEach(function(cycleNotes,idx){md+='## Cycle '+(idx+1)+'\n\n';cycleNotes.forEach(function(n){var h=n.title||('Session '+n.session);md+='### '+h+' ('+n.time+')\n'+n.text+'\n\n';});});}
+    else{flat.forEach(function(n){var h=n.title||('Session '+n.session);md+='### '+h+' ('+n.time+')\n'+n.text+'\n\n';});}
+    return md.trim()+'\n';
+  }
+  function generateCycleMarkdown(){
+    var md='# Cycle '+(currentCycle)+' — '+formatDate()+'\n**Objective:** '+getObjective()+'\n\n';
+    currentCycleNotes.forEach(function(n){var h=n.title||('Session '+n.session);md+='### '+h+' ('+n.time+')\n'+n.text+'\n\n';});
     return md.trim()+'\n';
   }
   function copyCurrentNote(){
     var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
     if(!text){showNoteStatus('Nothing to copy');return;}
-    var md=generateSingleMarkdown({workIndex:count+1,cycle:cycleIndex,title:title,text:text,time:formatTime()});
+    var md=generateSingleMarkdown({session:count+1,cycle:currentCycle,title:title,text:text,time:formatTime()});
     navigator.clipboard.writeText(md).then(function(){showNoteStatus('Copied');}).catch(function(){showNoteStatus('Could not copy');});
   }
+  function copyCycleNotes(){
+    if(currentCycleNotes.length===0)return;
+    navigator.clipboard.writeText(generateCycleMarkdown()).then(function(){var b=controls.querySelector('.secondary');if(b){b.textContent='Copied';setTimeout(function(){b.textContent='Copy Notes';},2000);}}).catch(function(){});
+  }
   function copyAllNotes(){
-    if(sessionNotes.length===0)return;
+    var flat=[];allNotes.forEach(function(cy){flat=flat.concat(cy);});
+    if(flat.length===0)return;
     navigator.clipboard.writeText(generateAllMarkdown()).then(function(){var b=controls.querySelector('.primary');if(b){b.textContent='Copied';setTimeout(function(){b.textContent='Copy All';},2000);}}).catch(function(){});
   }
   function showNoteStatus(m){notesStatus.textContent=m;notesStatus.classList.add('visible');setTimeout(function(){notesStatus.classList.remove('visible');},2500);}
 
   function toggleMute(){muted=!muted;document.getElementById('muteBtn').textContent=muted?'Sound Off':'Sound On';try{localStorage.setItem('pomodoro_muted',muted?'1':'0');}catch(e){}}
   function loadMute(){try{muted=localStorage.getItem('pomodoro_muted')==='1';document.getElementById('muteBtn').textContent=muted?'Sound Off':'Sound On';}catch(e){}}
-  function toggleFunnyMode(){funnyMode=!funnyMode;var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);try{localStorage.setItem('pomodoro_funny',funnyMode?'1':'0');}catch(e){}}
+  function toggleFunnyMode(){funnyMode=!funnyMode;var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);try{localStorage.setItem('pomodoro_funny',funnyMode?'1':'0');}catch(e){}renderFunnySoundsPanel();}
   function loadFunnyMode(){try{funnyMode=localStorage.getItem('pomodoro_funny')==='1';var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);}catch(e){}}
 
-  document.addEventListener('keydown',function(e){if(e.metaKey&&e.key==='Enter'){e.preventDefault();toggleStart();return;}if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
+  function renderFunnySoundsPanel(){
+    var panel=document.getElementById('funnySoundsPanel');
+    var wasVisible=panel.classList.contains('visible');
+    panel.classList.toggle('visible',funnyMode);
+    if(funnyMode&&!wasVisible&&phase==='idle')panelMsg('funnySoundsShow');
+    else if(!funnyMode&&wasVisible&&phase==='idle')panelMsg('funnySoundsHide');
+    ['sessionStart','twoMinReminder','sessionEnd','cycleEnd'].forEach(function(slot){
+      var has=!!customSoundCache[slot];
+      document.getElementById('soundName_'+slot).textContent=has?customSoundCache[slot].fileName:'';
+      document.getElementById('soundPlay_'+slot).style.display=has?'':'none';
+      document.getElementById('soundRemove_'+slot).style.display=has?'':'none';
+      document.getElementById('soundUpload_'+slot).textContent=has?'Change':'Upload';
+    });
+  }
+  function handleSoundUpload(slot,input){
+    var file=input.files&&input.files[0];if(!file)return;
+    input.value='';
+    if(file.size>MAX_SOUND_SIZE){showSoundError(slot,'Max 5 MB');return;}
+    if(!file.type.match(/^audio\//)){showSoundError(slot,'Audio files only');return;}
+    saveCustomSound(slot,file).then(function(){
+      if(customSoundCache[slot]&&customSoundCache[slot].objectURL)URL.revokeObjectURL(customSoundCache[slot].objectURL);
+      customSoundCache[slot]={fileName:file.name,objectURL:URL.createObjectURL(file)};
+      renderFunnySoundsPanel();
+    }).catch(function(){showSoundError(slot,'Save failed');});
+  }
+  function previewSound(slot){
+    if(!customSoundCache[slot])return;
+    try{if(previewAudio)previewAudio.pause();previewAudio=new Audio(customSoundCache[slot].objectURL);previewAudio.play().catch(function(){});}catch(e){}
+  }
+  function removeSound(slot){
+    removeCustomSoundDB(slot).then(function(){
+      if(customSoundCache[slot]&&customSoundCache[slot].objectURL)URL.revokeObjectURL(customSoundCache[slot].objectURL);
+      customSoundCache[slot]=null;
+      renderFunnySoundsPanel();
+    }).catch(function(){});
+  }
+  function showSoundError(slot,msg){
+    var row=document.querySelector('[data-slot="'+slot+'"]');
+    var existing=row.querySelector('.sound-error');if(existing)existing.remove();
+    var el=document.createElement('span');el.className='sound-error';el.textContent=msg;row.appendChild(el);
+    setTimeout(function(){el.remove();},3000);
+  }
+
+  document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
 
   // Update checker
-  var APP_VERSION='0.3.5';
+  var APP_VERSION='0.3.6';
   var GITHUB_REPO='akasatrio/reflection-pomodoro-timer';
   function compareVersions(a,b){
     var pa=a.replace(/^v/,'').split('.').map(Number),pb=b.replace(/^v/,'').split('.').map(Number);
@@ -758,6 +847,7 @@
   setInterval(checkForUpdate,30*60*1000);
 
   loadSettings();loadMute();loadFunnyMode();buildDots();display.textContent=fmt(WORK);updateTitle();
+  loadAllCustomSounds().then(function(){renderFunnySoundsPanel();});
 </script>
 </body>
 </html>

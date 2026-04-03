@@ -1,5 +1,6 @@
 import Cocoa
 import WebKit
+import UniformTypeIdentifiers
 
 class DragView: NSView {
     override func mouseDown(with event: NSEvent) {
@@ -7,17 +8,17 @@ class DragView: NSView {
     }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
+class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUIDelegate {
     var panel: NSPanel!
     var webView: WKWebView!
     var statusItem: NSStatusItem!
     let fullWidth: CGFloat = 280
-    /// Taller default so two-row settings + footer signature clear the panel bottom.
-    let fullHeight: CGFloat = 515
+    let fullHeight: CGFloat = 500
+    let funnySoundsHeight: CGFloat = 620
     let reflectionWidth: CGFloat = 280
-    let reflectionHeight: CGFloat = 610
+    let reflectionHeight: CGFloat = 580
     let compactWidth: CGFloat = 280
-    let compactHeight: CGFloat = 278
+    let compactHeight: CGFloat = 310
     let miniWidth: CGFloat = 150
     let miniHeight: CGFloat = 100
     let dragBarHeight: CGFloat = 28
@@ -82,11 +83,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
 
         let resourcePath = Bundle.main.resourcePath ?? (Bundle.main.bundlePath as NSString).deletingLastPathComponent
         let htmlURL = URL(fileURLWithPath: (resourcePath as NSString).appendingPathComponent("index.html"))
+        webView.uiDelegate = self
         webView.loadFileURL(htmlURL, allowingReadAccessTo: URL(fileURLWithPath: resourcePath))
 
-        // Accessory (menu-bar-only) apps must activate explicitly or the panel stays behind other apps.
-        NSApp.activate(ignoringOtherApps: true)
-        panel.orderFrontRegardless()
         panel.makeKeyAndOrderFront(nil)
     }
 
@@ -171,28 +170,47 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
             panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: miniWidth, height: miniHeight)), display: true, animate: true)
 
         } else if action == "sessionDone" {
-            if let contentHeight = dict["height"] as? CGFloat, contentHeight > 0 {
+            // Dynamic height for done/cycle-break screens based on content
+            let contentHeight: CGFloat
+            if let v = dict["height"] as? CGFloat { contentHeight = v }
+            else if let d = dict["height"] as? Double { contentHeight = CGFloat(d) }
+            else { contentHeight = 0 }
+
+            if contentHeight > 0 {
                 let maxHeight: CGFloat
                 if let screen = panel.screen ?? NSScreen.main {
                     maxHeight = screen.visibleFrame.height * 0.85
                 } else {
                     maxHeight = 720
                 }
-                let minDoneHeight = fullHeight
-                /// Extra points so footer, scrollbars, and WKWebView rounding don’t clip the last lines.
-                let layoutPadding: CGFloat = 28
-                let rawTarget = contentHeight + dragBarHeight + layoutPadding
-                let targetHeight = min(max(rawTarget, minDoneHeight), maxHeight)
+                let padding: CGFloat = 24
+                let rawTarget = contentHeight + dragBarHeight + padding
+                let targetHeight = min(max(rawTarget, fullHeight), maxHeight)
                 let origin = panel.frame.origin
                 let oldHeight = panel.frame.height
                 let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - targetHeight))
                 panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: fullWidth, height: targetHeight)), display: true, animate: true)
             }
 
+            panel.isFloatingPanel = false
+            panel.level = .normal
+
         } else if action == "sessionStop" {
             panel.isFloatingPanel = false
             panel.level = .normal
 
+            let origin = panel.frame.origin
+            let oldHeight = panel.frame.height
+            let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - fullHeight))
+            panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: fullWidth, height: fullHeight)), display: true, animate: true)
+
+        } else if action == "funnySoundsShow" {
+            let origin = panel.frame.origin
+            let oldHeight = panel.frame.height
+            let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - funnySoundsHeight))
+            panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: fullWidth, height: funnySoundsHeight)), display: true, animate: true)
+
+        } else if action == "funnySoundsHide" {
             let origin = panel.frame.origin
             let oldHeight = panel.frame.height
             let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - fullHeight))
@@ -206,87 +224,63 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
 
         } else if action == "updateApp" {
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                guard let self = self else { return }
-
-                let logsDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
-                    .appendingPathComponent("Logs", isDirectory: true)
-                try? FileManager.default.createDirectory(at: logsDir, withIntermediateDirectories: true)
-                let logPath = logsDir.appendingPathComponent("ReflectionPomodoroTimer-update.log").path
-
-                let workName = "pomodoro-update-\(UUID().uuidString.prefix(8))"
-                let tempDir = (NSTemporaryDirectory() as NSString).appendingPathComponent(workName)
-                let targetBundle = Bundle.main.bundlePath
-
-                // Use env for paths so spaces/special chars stay safe; inherit user PATH for swiftc/codesign.
-                var env = ProcessInfo.processInfo.environment
-                env["POMO_TMP"] = tempDir
-                env["POMO_TARGET"] = targetBundle
-                env["POMO_LOG"] = logPath
-                env["POMODORO_SKIP_INSTALL"] = "1"
-
+                let tempDir = NSTemporaryDirectory() + "pomodoro-update"
                 let script = """
                 set -e
-                exec >"$POMO_LOG" 2>&1
-                echo "=== Update started $(date) ==="
-                echo "Target bundle: $POMO_TARGET"
-                echo "Temp: $POMO_TMP"
-                rm -rf "$POMO_TMP"
-                mkdir -p "$POMO_TMP"
-                cd "$POMO_TMP"
-                /usr/bin/curl -fSL "https://github.com/akasatrio/reflection-pomodoro-timer/archive/refs/heads/main.zip" -o source.zip
+                rm -rf "\(tempDir)"
+                mkdir -p "\(tempDir)"
+                /usr/bin/curl -sL "https://github.com/akasatrio/reflection-pomodoro-timer/archive/refs/heads/main.zip" -o "\(tempDir)/source.zip"
+                cd "\(tempDir)"
                 /usr/bin/unzip -q source.zip
                 cd reflection-pomodoro-timer-main
                 chmod +x build.sh
                 ./build.sh
-                NEW_APP="$(pwd)/Reflection Pomodoro Timer.app"
-                test -d "$NEW_APP"
-                /usr/bin/ditto "$NEW_APP" "$POMO_TARGET"
-                echo "=== Update finished OK $(date) ==="
-                cd /
-                rm -rf "$POMO_TMP"
+                rm -rf "\(tempDir)"
                 """
 
                 let process = Process()
                 process.executableURL = URL(fileURLWithPath: "/bin/bash")
-                process.arguments = ["-lc", script]
-                process.environment = env
-                process.currentDirectoryURL = URL(fileURLWithPath: NSHomeDirectory())
+                process.arguments = ["-c", script]
+                process.standardOutput = FileHandle.nullDevice
+                process.standardError = FileHandle.nullDevice
 
                 do {
                     try process.run()
                     process.waitUntilExit()
 
-                    let status = process.terminationStatus
-
                     DispatchQueue.main.async {
-                        if status == 0 {
+                        if process.terminationStatus == 0 {
                             let relaunch = Process()
                             relaunch.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-                            relaunch.arguments = [targetBundle]
+                            relaunch.arguments = ["/Applications/Reflection Pomodoro Timer.app"]
                             try? relaunch.run()
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 NSApp.terminate(nil)
                             }
                         } else {
-                            let tail = AppDelegate.lastLinesOfFile(at: logPath, maxLines: 4)
-                            let safe = tail
-                                .replacingOccurrences(of: "\\", with: " ")
-                                .replacingOccurrences(of: "'", with: "′")
-                                .replacingOccurrences(of: "\n", with: " — ")
-                            let jsSafe = safe.prefix(220)
-                            let msg = jsSafe.isEmpty
-                                ? "Build or install failed (exit \(status)). See ~/Library/Logs/ReflectionPomodoroTimer-update.log"
-                                : String(jsSafe)
-                            let escaped = msg.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
-                            self.webView.evaluateJavaScript("updateFailed(\"\(escaped)\")", completionHandler: nil)
+                            self?.webView.evaluateJavaScript("updateFailed('Build failed')", completionHandler: nil)
                         }
                     }
                 } catch {
                     DispatchQueue.main.async {
-                        self.webView.evaluateJavaScript("updateFailed('Could not run updater: \\(error.localizedDescription)')", completionHandler: nil)
+                        self?.webView.evaluateJavaScript("updateFailed('Update failed')", completionHandler: nil)
                     }
                 }
             }
+        }
+    }
+
+    // File upload support for WKWebView
+    func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping ([URL]?) -> Void) {
+        let openPanel = NSOpenPanel()
+        openPanel.canChooseFiles = true
+        openPanel.canChooseDirectories = false
+        openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection
+        openPanel.allowedContentTypes = [
+            .mp3, .wav, .aiff, .audio
+        ]
+        openPanel.beginSheetModal(for: panel) { response in
+            completionHandler(response == .OK ? openPanel.urls : nil)
         }
     }
 
@@ -337,20 +331,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
         setPreference("autoStartAfterBreak", value: !current)
     }
 
-    /// Last lines of the updater log for surfacing errors in the web UI.
-    private static func lastLinesOfFile(at path: String, maxLines: Int) -> String {
-        guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
-              let text = String(data: data, encoding: .utf8) else { return "" }
-        let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
-        let tail = lines.suffix(maxLines)
-        return tail.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { return false }
 }
 
 let app = NSApplication.shared
-app.setActivationPolicy(.regular)
+app.setActivationPolicy(.accessory)
 
 let mainMenu = NSMenu()
 let appMenuItem = NSMenuItem(); let appMenu = NSMenu()
