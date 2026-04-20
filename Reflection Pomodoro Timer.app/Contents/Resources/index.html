@@ -226,7 +226,7 @@
   body.compact .stats-strip, body.mini .stats-strip { display:none !important; }
 
   /* Per-pomodoro objective input — shown during work session (compact mode), hidden otherwise */
-  .objective-inline { display:none; margin:-0.2rem 0 0.5rem; }
+  .objective-inline { display:none; margin:-0.2rem 0 1rem; }
   .objective-inline input {
     width:100%; background:transparent; border:none;
     border-bottom:1px solid var(--border-light); color:inherit;
@@ -237,6 +237,7 @@
   .objective-inline input::placeholder { opacity:0.25; }
   .objective-inline input:focus { opacity:1; border-bottom-color:currentColor; }
   body.compact .objective-inline { display:block; }
+  body.compact .phase-label { margin-top:0.6rem; }
 
   /* Compact mode — hide settings, objective, reflection during active session */
   body.compact .settings { display:none; }
