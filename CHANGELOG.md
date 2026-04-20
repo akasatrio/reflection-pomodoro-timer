@@ -1,5 +1,45 @@
 # Changelog
 
+## v0.4.0 — 20 Apr 2026
+
+### New
+- **Session history + streaks:** every completed pomodoro is persisted to `localStorage` with date, objective, title, and body. Stats strip in idle/done view shows "Xm today · N-day streak · total". Last 2000 pomodoros retained.
+- **Per-pomodoro objective:** inline input shown during work sessions, pre-filled with the cycle-wide default. Stored per note and used in markdown export, so each session can track a distinct intent.
+- **Obsidian auto-append:** optional setting writes the compiled markdown to a daily-note file at cycle-done (multi-cycle) or run-done (single-cycle). Supports `{date}` template and `~` expansion. Path is validated Swift-side against traversal / non-HOME writes.
+- **macOS Focus-mode automation:** two optional Shortcut names, one fired on work start, one on work end. Uses `shortcuts run` via Process arguments (no shell), injection-safe.
+- **Idle auto-pause:** configurable N-minute threshold. Swift polls `CGEventSource.secondsSinceLastEventType` every 15 s during work sessions; when the user has been idle beyond the threshold, JS pauses the timer and shows a status line.
+
+### Accessibility
+- Raised faded label opacities from 0.25–0.35 to 0.55–0.65 (passes WCAG AA contrast).
+- Added `aria-label` + `title` to all icon buttons (mini, minimize, close, sound preview/remove).
+- Timer element marked with `role="timer"`; phase label `aria-live="polite"` so screen readers announce phase changes.
+- Toggle buttons expose `aria-pressed` state; keyboard `:focus-visible` outline on all interactive elements.
+- Active Funny-Mode state now underlined (previously colour-only, unreadable for colour-blind users).
+- Keyboard-shortcut hints added to Start/Reset/Skip via `title`.
+- Number inputs in settings now select-on-focus (type immediately replaces value).
+
+---
+
+## v0.3.7 — 20 Apr 2026
+
+### Fixed
+- **Timer drift / sleep suspension:** switched to absolute `endAt` timestamp with `computeRemaining()`; `setInterval` now polls at 250 ms and derives time from wall clock. Closing the laptop or backgrounding the app no longer loses seconds.
+- **Reflection panel missed at 2:00:** check relaxed from `timeLeft === 120` to `<= 120 && !reflectionShown`, so pausing at the 2-minute mark no longer skips the reflection prompt.
+- **Notification body "undefined":** `notify(title)` calls with no body no longer render literal "undefined" in macOS notifications.
+- **Dock presence:** restored `NSApp.setActivationPolicy(.regular)` that v0.3.5 documented but the source had reverted to `.accessory`.
+
+### Security
+- **Auto-updater hardened:** no longer downloads the mutable `main` branch. Pins to the release tag surfaced by the GitHub API, validates the tag against strict semver on both JS and Swift sides (blocks shell injection), uses `set -euo pipefail` + `curl -f --proto '=https' --tlsv1.2`, and surfaces build stderr on failure.
+
+---
+
+## v0.3.6 — 3 Apr 2026
+
+### New
+- **Custom sounds for Funny Mode:** upload per-slot audio (session start, 2-min reminder, session end, cycle end). Files stored in IndexedDB (5 MB cap each), previewable, removable. Falls back to Game Boy startup sound when no custom sound is set.
+
+---
+
 ## v0.3.5 — 30 Mar 2026
 
 ### Fixed

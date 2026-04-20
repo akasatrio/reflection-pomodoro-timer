@@ -45,9 +45,9 @@
   }
   .section-title {
     font-size:0.48rem; font-weight:700; letter-spacing:0.16em;
-    text-transform:uppercase; opacity:0.35; margin-bottom:0.4rem;
+    text-transform:uppercase; opacity:0.55; margin-bottom:0.4rem;
   }
-  .reset-btn { cursor:pointer; opacity:0.6; font-size:0.6rem; vertical-align:middle; transition:opacity 0.15s; }
+  .reset-btn { cursor:pointer; opacity:0.7; font-size:0.6rem; vertical-align:middle; transition:opacity 0.15s; }
   .reset-btn:hover { opacity:1; }
   .settings-grid { display:flex; justify-content:center; gap:0; margin-bottom:0.35rem; }
   .settings-grid:last-of-type { margin-bottom:0.4rem; }
@@ -61,7 +61,7 @@
   }
   .setting-field label {
     font-size:0.44rem; font-weight:600; letter-spacing:0.08em;
-    text-transform:uppercase; opacity:0.3;
+    text-transform:uppercase; opacity:0.55;
   }
   .setting-field input[type="number"] {
     width:34px; text-align:center; background:transparent; border:none;
@@ -90,11 +90,11 @@
   /* Timer */
   .objective-display {
     font-size:0.5rem; font-weight:600; letter-spacing:0.12em;
-    text-transform:uppercase; opacity:0.3; margin-bottom:0.8rem; min-height:0.5rem;
+    text-transform:uppercase; opacity:0.55; margin-bottom:0.8rem; min-height:0.5rem;
   }
   .phase-label {
     font-size:0.9rem; font-weight:700; letter-spacing:0.12em;
-    text-transform:uppercase; opacity:0.5; margin-bottom:0.5rem; margin-top:-1rem;
+    text-transform:uppercase; opacity:0.65; margin-bottom:0.5rem; margin-top:-1rem;
   }
   .timer {
     font-family:'M PLUS Rounded 1c', sans-serif; font-size:4rem; font-weight:300; letter-spacing:0.06em;
@@ -143,10 +143,11 @@
   .toggles-row button {
     background:none; border:none; color:inherit; font-family:inherit;
     font-size:0.44rem; font-weight:600; letter-spacing:0.12em;
-    text-transform:uppercase; opacity:0.25; cursor:pointer; padding:0.2rem 0.4rem;
+    text-transform:uppercase; opacity:0.55; cursor:pointer; padding:0.2rem 0.4rem;
   }
-  .toggles-row button:hover { opacity:0.5; }
-  .toggles-row button.active { opacity:0.55; }
+  .toggles-row button:hover { opacity:0.85; }
+  .toggles-row button.active { opacity:0.85; text-decoration:underline; }
+  .toggles-row button:focus-visible { outline:1px solid currentColor; outline-offset:2px; opacity:1; }
 
   /* Reflection */
   .reflection-panel { display:none; margin-top:1rem; animation: fadeIn 0.4s forwards; }
@@ -212,6 +213,31 @@
   body.done { overflow-y: auto; }
   body.done::-webkit-scrollbar { display:none; }
 
+  /* Stats strip — shown in idle / done state only */
+  .stats-strip {
+    display:none; justify-content:center; gap:0.9rem;
+    font-size:0.48rem; font-weight:600; letter-spacing:0.08em;
+    text-transform:uppercase; opacity:0.55;
+    padding:0.35rem 0 0.5rem; margin-top:-0.3rem;
+  }
+  .stats-strip.visible { display:flex; }
+  .stats-strip .stat-val { font-weight:700; opacity:0.85; }
+  .stats-strip .stat-sep { opacity:0.35; }
+  body.compact .stats-strip, body.mini .stats-strip { display:none !important; }
+
+  /* Per-pomodoro objective input — shown during work session (compact mode), hidden otherwise */
+  .objective-inline { display:none; margin:-0.2rem 0 0.5rem; }
+  .objective-inline input {
+    width:100%; background:transparent; border:none;
+    border-bottom:1px solid var(--border-light); color:inherit;
+    font-family:inherit; font-size:0.58rem; font-weight:600;
+    letter-spacing:0.06em; text-align:center; opacity:0.7;
+    padding:0.15rem 0.2rem; outline:none;
+  }
+  .objective-inline input::placeholder { opacity:0.25; }
+  .objective-inline input:focus { opacity:1; border-bottom-color:currentColor; }
+  body.compact .objective-inline { display:block; }
+
   /* Compact mode — hide settings, objective, reflection during active session */
   body.compact .settings { display:none; }
   body.compact .objective-display { display:none; }
@@ -259,6 +285,10 @@
   .close-btn:hover { opacity:0.9; color:#c0392b; }
   .win-btn { color:#fff !important; }
   .close-btn:hover { color:#ff6b6b !important; }
+  .win-btn:focus-visible { outline:1px solid currentColor; outline-offset:1px; opacity:1; }
+
+  /* Keyboard focus visibility on all interactive elements */
+  button:focus-visible, input:focus-visible, textarea:focus-visible { outline:1px solid currentColor; outline-offset:2px; }
 
   /* Update banner */
   .update-banner {
@@ -286,6 +316,27 @@
   .sound-slot button:hover { opacity:0.7; }
   .sound-error { font-size:0.42rem; color:#c0392b; opacity:0.7; margin-top:0.15rem; }
   body.compact .funny-sounds-panel, body.mini .funny-sounds-panel { display:none !important; }
+
+  /* Advanced settings modal (Obsidian / Shortcuts / Idle) */
+  .advanced-btn { cursor:pointer; opacity:0.7; font-size:0.6rem; vertical-align:middle; transition:opacity 0.15s; margin-left:0.25rem; }
+  .advanced-btn:hover { opacity:1; }
+  .advanced-panel {
+    display:none; position:fixed; left:0; right:0; top:1.6rem; bottom:0;
+    background:var(--beige); color:var(--brown);
+    padding:0.75rem 1.2rem 1rem 1.2rem; overflow-y:auto; z-index:10;
+  }
+  body.work .advanced-panel { background:var(--green); color:var(--beige); }
+  body.break .advanced-panel { background:var(--beige-light); color:var(--green); }
+  body.done  .advanced-panel { background:var(--brown); color:var(--beige); }
+  .advanced-panel.visible { display:block; animation: fadeIn 0.25s forwards; }
+  .advanced-header {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:0.5rem; padding-bottom:0.35rem; border-bottom:1px solid var(--border-light);
+    font-size:0.55rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; opacity:0.7;
+  }
+  .advanced-close { cursor:pointer; opacity:0.55; font-size:0.9rem; line-height:1; transition:opacity 0.15s; background:none; border:none; color:inherit; padding:0 0.15rem; }
+  .advanced-close:hover { opacity:1; }
+  body.compact .advanced-panel, body.mini .advanced-panel { display:none !important; }
 </style>
 </head>
 <body>
@@ -293,18 +344,27 @@
   <div class="drag-bar">
     <span class="app-bar-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="13" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="13" x2="12" y2="8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="13" x2="15.5" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="10" y1="2" x2="14" y2="2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="2" x2="12" y2="4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
     <div class="window-controls">
-      <button class="win-btn mini-btn" onclick="toggleMiniMode()" title="Mini mode">&#x2022;</button>
-      <button class="win-btn minimize-btn" onclick="hideToMenuBar()" title="Minimize to menu bar">&#x2013;</button>
-      <button class="win-btn close-btn" onclick="closeApp()" title="Close">&times;</button>
+      <button class="win-btn mini-btn" onclick="toggleMiniMode()" title="Mini mode" aria-label="Toggle mini mode">&#x2022;</button>
+      <button class="win-btn minimize-btn" onclick="hideToMenuBar()" title="Minimize to menu bar" aria-label="Minimize to menu bar">&#x2013;</button>
+      <button class="win-btn close-btn" onclick="closeApp()" title="Close" aria-label="Close window">&times;</button>
     </div>
   </div>
   <!-- Update banner -->
   <div class="update-banner" id="updateBanner" onclick="applyUpdate()">
     &#x2191; Update available (<span id="updateVersion"></span>) — Restart to update
   </div>
+  <!-- Stats strip (history + streak) — visible in idle/done only -->
+  <div class="stats-strip" id="statsStrip" aria-live="polite">
+    <span><span class="stat-val" id="statToday">0m</span> today</span>
+    <span class="stat-sep">·</span>
+    <span><span class="stat-val" id="statStreak">0</span>-day streak</span>
+    <span class="stat-sep">·</span>
+    <span><span class="stat-val" id="statTotal">0</span> total</span>
+  </div>
+
   <!-- Settings -->
   <div class="settings" id="settingsPanel">
-    <div class="section-title">Session <span class="reset-btn" onclick="resetSettings()" title="Reset to defaults">&#x21bb;</span></div>
+    <div class="section-title">Session <span class="reset-btn" onclick="resetSettings()" title="Reset to defaults">&#x21bb;</span><span class="advanced-btn" onclick="toggleAdvanced()" title="Advanced settings" aria-label="Open advanced settings">&#x2699;</span></div>
     <div class="settings-grid">
       <div class="setting-field"><label>Work</label><input type="number" id="inputWork" value="25" min="1" max="90"></div>
       <div class="setting-field"><label>Break</label><input type="number" id="inputShort" value="5" min="1" max="30"></div>
@@ -321,10 +381,41 @@
     </div>
   </div>
 
+  <!-- Advanced settings modal: Obsidian auto-append, macOS Shortcuts, idle auto-pause -->
+  <div class="advanced-panel" id="advancedPanel" role="dialog" aria-modal="true" aria-label="Advanced settings">
+    <div class="advanced-header">
+      <span>Advanced</span>
+      <button type="button" class="advanced-close" onclick="toggleAdvanced()" title="Close" aria-label="Close advanced settings">&times;</button>
+    </div>
+    <div class="obsidian-row" style="display:flex;align-items:center;gap:0.3rem;margin-top:0.2rem;padding-top:0.35rem;">
+      <label style="font-size:0.44rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;opacity:0.55;cursor:pointer;display:flex;align-items:center;gap:0.3rem;">
+        <input type="checkbox" id="obsidianEnabled" style="margin:0;cursor:pointer;" onchange="saveObsidianSettings()">
+        Append to note
+      </label>
+      <input type="text" id="obsidianPath" placeholder="~/Obsidian/Daily/{date}.md" style="flex:1;background:transparent;border:none;border-bottom:1px solid var(--border-light);color:inherit;font-family:inherit;font-size:0.52rem;padding:0.15rem 0.2rem;outline:none;" onblur="saveObsidianSettings()" aria-label="Daily note file path; {date} is replaced with today's date">
+    </div>
+    <div class="shortcuts-row" style="display:flex;align-items:center;gap:0.3rem;margin-top:0.5rem;padding-top:0.35rem;border-top:1px solid var(--border-light);">
+      <label style="font-size:0.44rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;opacity:0.55;min-width:3.8rem;" for="shortcutStart">Start &#9654;</label>
+      <input type="text" id="shortcutStart" placeholder="Shortcut on work start" style="flex:1;background:transparent;border:none;border-bottom:1px solid var(--border-light);color:inherit;font-family:inherit;font-size:0.52rem;padding:0.15rem 0.2rem;outline:none;" onblur="saveShortcutSettings()" aria-label="Macro shortcut name to run when a work session starts">
+    </div>
+    <div class="shortcuts-row" style="display:flex;align-items:center;gap:0.3rem;margin-top:0.2rem;">
+      <label style="font-size:0.44rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;opacity:0.55;min-width:3.8rem;" for="shortcutEnd">End &#9632;</label>
+      <input type="text" id="shortcutEnd" placeholder="Shortcut on work end" style="flex:1;background:transparent;border:none;border-bottom:1px solid var(--border-light);color:inherit;font-family:inherit;font-size:0.52rem;padding:0.15rem 0.2rem;outline:none;" onblur="saveShortcutSettings()" aria-label="Macro shortcut name to run when a work session ends">
+    </div>
+    <div class="idle-row" style="display:flex;align-items:center;gap:0.3rem;margin-top:0.5rem;padding-top:0.35rem;border-top:1px solid var(--border-light);">
+      <label style="font-size:0.44rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;opacity:0.55;" for="idleMinutes">Pause if idle</label>
+      <input type="number" id="idleMinutes" min="0" max="30" value="0" style="width:36px;text-align:center;background:transparent;border:none;border-bottom:1px solid var(--border-light);color:inherit;font-family:inherit;font-size:0.68rem;padding:0.1rem 0;outline:none;" onchange="saveIdleSettings()" aria-label="Auto-pause after N minutes of keyboard/mouse inactivity (0 disables)">
+      <span style="font-size:0.44rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;opacity:0.45;">min (0=off)</span>
+    </div>
+  </div>
+
   <!-- Timer -->
   <div class="objective-display" id="objectiveDisplay"></div>
-  <div class="phase-label" id="phaseLabel">Ready</div>
-  <div class="timer" id="timerDisplay">25:00</div>
+  <div class="objective-inline" id="objectiveInline">
+    <input type="text" id="pomodoroObjective" placeholder="This pomodoro: what are you focusing on?" aria-label="Objective for this pomodoro">
+  </div>
+  <div class="phase-label" id="phaseLabel" aria-live="polite">Ready</div>
+  <div class="timer" id="timerDisplay" role="timer" aria-label="Time remaining">25:00</div>
   <div class="warning-label" id="warningLabel"></div>
   <div class="progress-dots" id="progressDots"></div>
 
@@ -349,45 +440,45 @@
   </div>
 
   <div class="controls" id="controls">
-    <button class="primary" onclick="toggleStart()">Start</button>
-    <button class="secondary" onclick="resetBlock()">Reset</button>
-    <button class="secondary" onclick="skipPhase()">Skip</button>
+    <button class="primary" onclick="toggleStart()" title="Start / pause (Space)">Start</button>
+    <button class="secondary" onclick="resetBlock()" title="Reset block (R)">Reset</button>
+    <button class="secondary" onclick="skipPhase()" title="Skip phase (S)">Skip</button>
   </div>
   <div class="toggles-row">
-    <button onclick="toggleMute()" id="muteBtn">Sound On</button>
-    <button onclick="toggleFunnyMode()" id="funnyBtn">Funny Mode</button>
+    <button onclick="toggleMute()" id="muteBtn" aria-pressed="false">Sound On</button>
+    <button onclick="toggleFunnyMode()" id="funnyBtn" aria-pressed="false">Funny Mode</button>
   </div>
   <div class="funny-sounds-panel" id="funnySoundsPanel">
     <div class="section-title">Funny Mode Sounds</div>
     <div class="sound-slot" data-slot="sessionStart">
       <span class="sound-slot-label">Session Start</span>
       <span class="sound-slot-name" id="soundName_sessionStart"></span>
-      <button onclick="previewSound('sessionStart')" id="soundPlay_sessionStart" style="display:none">&#9654;</button>
-      <button onclick="removeSound('sessionStart')" id="soundRemove_sessionStart" style="display:none">&times;</button>
+      <button onclick="previewSound('sessionStart')" id="soundPlay_sessionStart" style="display:none" aria-label="Preview sound" title="Preview">&#9654;</button>
+      <button onclick="removeSound('sessionStart')" id="soundRemove_sessionStart" style="display:none" aria-label="Remove sound" title="Remove">&times;</button>
       <button onclick="document.getElementById('soundFile_sessionStart').click()" id="soundUpload_sessionStart">Upload</button>
       <input type="file" id="soundFile_sessionStart" accept=".mp3,.wav,.m4a,.ogg,audio/*" style="display:none" onchange="handleSoundUpload('sessionStart',this)">
     </div>
     <div class="sound-slot" data-slot="twoMinReminder">
       <span class="sound-slot-label">2-Min Reminder</span>
       <span class="sound-slot-name" id="soundName_twoMinReminder"></span>
-      <button onclick="previewSound('twoMinReminder')" id="soundPlay_twoMinReminder" style="display:none">&#9654;</button>
-      <button onclick="removeSound('twoMinReminder')" id="soundRemove_twoMinReminder" style="display:none">&times;</button>
+      <button onclick="previewSound('twoMinReminder')" id="soundPlay_twoMinReminder" style="display:none" aria-label="Preview sound" title="Preview">&#9654;</button>
+      <button onclick="removeSound('twoMinReminder')" id="soundRemove_twoMinReminder" style="display:none" aria-label="Remove sound" title="Remove">&times;</button>
       <button onclick="document.getElementById('soundFile_twoMinReminder').click()" id="soundUpload_twoMinReminder">Upload</button>
       <input type="file" id="soundFile_twoMinReminder" accept=".mp3,.wav,.m4a,.ogg,audio/*" style="display:none" onchange="handleSoundUpload('twoMinReminder',this)">
     </div>
     <div class="sound-slot" data-slot="sessionEnd">
       <span class="sound-slot-label">Session End</span>
       <span class="sound-slot-name" id="soundName_sessionEnd"></span>
-      <button onclick="previewSound('sessionEnd')" id="soundPlay_sessionEnd" style="display:none">&#9654;</button>
-      <button onclick="removeSound('sessionEnd')" id="soundRemove_sessionEnd" style="display:none">&times;</button>
+      <button onclick="previewSound('sessionEnd')" id="soundPlay_sessionEnd" style="display:none" aria-label="Preview sound" title="Preview">&#9654;</button>
+      <button onclick="removeSound('sessionEnd')" id="soundRemove_sessionEnd" style="display:none" aria-label="Remove sound" title="Remove">&times;</button>
       <button onclick="document.getElementById('soundFile_sessionEnd').click()" id="soundUpload_sessionEnd">Upload</button>
       <input type="file" id="soundFile_sessionEnd" accept=".mp3,.wav,.m4a,.ogg,audio/*" style="display:none" onchange="handleSoundUpload('sessionEnd',this)">
     </div>
     <div class="sound-slot" data-slot="cycleEnd">
       <span class="sound-slot-label">Cycle End</span>
       <span class="sound-slot-name" id="soundName_cycleEnd"></span>
-      <button onclick="previewSound('cycleEnd')" id="soundPlay_cycleEnd" style="display:none">&#9654;</button>
-      <button onclick="removeSound('cycleEnd')" id="soundRemove_cycleEnd" style="display:none">&times;</button>
+      <button onclick="previewSound('cycleEnd')" id="soundPlay_cycleEnd" style="display:none" aria-label="Preview sound" title="Preview">&#9654;</button>
+      <button onclick="removeSound('cycleEnd')" id="soundRemove_cycleEnd" style="display:none" aria-label="Remove sound" title="Remove">&times;</button>
       <button onclick="document.getElementById('soundFile_cycleEnd').click()" id="soundUpload_cycleEnd">Upload</button>
       <input type="file" id="soundFile_cycleEnd" accept=".mp3,.wav,.m4a,.ogg,audio/*" style="display:none" onchange="handleSoundUpload('cycleEnd',this)">
     </div>
@@ -398,8 +489,17 @@
 <script>
   let SESSION=4, LONG_EVERY=4, CYCLES=1, WORK=25*60, SHORT=5*60, LONG=15*60;
   let phase='idle', timeLeft=WORK, running=false, interval=null, count=0, currentCycle=0;
+  let endAt=0; // absolute wall-clock deadline in ms; drives drift-free timing while running
   let allNotes=[], currentCycleNotes=[], warningShown=false, reflectionShown=false, noteSubmittedThisPomodoro=false;
   let muted=false, funnyMode=false;
+
+  function computeRemaining(){return Math.max(0, Math.round((endAt - Date.now())/1000));}
+  function startTicking(seconds){
+    endAt = Date.now() + seconds*1000;
+    timeLeft = seconds;
+    clearInterval(interval);
+    interval = setInterval(tick, 250);
+  }
 
   // Bridge to Swift panel control
   function panelMsg(action,extra){
@@ -447,7 +547,7 @@
       var o3=ctx.createOscillator(),g3=ctx.createGain();o3.type='sine';o3.frequency.setValueAtTime(3280,t);
       g3.gain.setValueAtTime(0.035,t);g3.gain.exponentialRampToValueAtTime(0.001,t+0.3);
       o3.connect(g3);g3.connect(ctx.destination);o3.start(t);o3.stop(t+0.3);
-    }}catch(e){}
+    }}catch(e){console.warn('bellStrike failed',e);}
   }
   function celebrationBells(){if(!playCustomSound('cycleEnd')){bellStrike(3,0);bellStrike(2,1.0);bellStrike(1,1.8);}}
 
@@ -498,9 +598,9 @@
           });
           resolve();
         };
-        req.onerror=function(){resolve();};
+        req.onerror=function(){console.warn('loadAllCustomSounds readAll failed',req.error);resolve();};
       });
-    }).catch(function(){});
+    }).catch(function(e){console.warn('loadAllCustomSounds failed',e);});
   }
   function playCustomSound(slot){
     if(muted)return false;
@@ -508,9 +608,9 @@
     try{
       if(previewAudio)previewAudio.pause();
       previewAudio=new Audio(customSoundCache[slot].objectURL);
-      previewAudio.play().catch(function(){});
+      previewAudio.play().catch(function(e){console.warn('playCustomSound play() rejected',slot,e);});
       return true;
-    }catch(e){return false;}
+    }catch(e){console.warn('playCustomSound failed',slot,e);return false;}
   }
 
   function playWarningSound(){if(muted)return;if(!playCustomSound('twoMinReminder'))playGameBoySound();}
@@ -518,11 +618,48 @@
   function playTransitionSound(){if(muted)return;if(!playCustomSound('sessionStart'))playGameBoySound();}
 
   function requestNotifications(){if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();}
-  function notify(t,b){if('Notification'in window&&Notification.permission==='granted')new Notification(t,{body:b,silent:true});}
+  function notify(t,b){if('Notification'in window&&Notification.permission==='granted'){var opts={silent:true};if(b)opts.body=b;new Notification(t,opts);}}
 
   function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
   function formatDate(){var d=new Date(),m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();}
   function formatTime(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+  function todayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+  // History: array of {date:'YYYY-MM-DD', min, objective, title, text, ts}
+  var HISTORY_KEY='pomodoro_history',HISTORY_MAX=2000;
+  function loadHistory(){try{return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');}catch(e){return [];}}
+  function saveHistory(h){try{localStorage.setItem(HISTORY_KEY,JSON.stringify(h.slice(-HISTORY_MAX)));}catch(e){console.warn('saveHistory failed',e);}}
+  function recordPomodoro(note){
+    var h=loadHistory();
+    var obj=(note&&note.objective)||getCurrentObjective();
+    h.push({date:todayKey(),min:Math.round(WORK/60),objective:obj,title:note&&note.title||'',text:note&&note.text||'',ts:Date.now()});
+    saveHistory(h);renderStats();
+  }
+  function computeStats(){
+    var h=loadHistory(),today=todayKey();
+    var todayMin=0;
+    for(var i=0;i<h.length;i++)if(h[i].date===today)todayMin+=(h[i].min||0);
+    // Streak: count consecutive days ending today (or yesterday if no session today yet)
+    var days={};h.forEach(function(r){days[r.date]=true;});
+    var streak=0,cursor=new Date();
+    if(!days[today]){cursor.setDate(cursor.getDate()-1);}
+    while(true){
+      var k=cursor.getFullYear()+'-'+String(cursor.getMonth()+1).padStart(2,'0')+'-'+String(cursor.getDate()).padStart(2,'0');
+      if(days[k]){streak++;cursor.setDate(cursor.getDate()-1);}else break;
+    }
+    return {todayMin:todayMin,streak:streak,total:h.length};
+  }
+  function renderStats(){
+    var s=computeStats();
+    var today=s.todayMin>=60?Math.floor(s.todayMin/60)+'h'+(s.todayMin%60?(s.todayMin%60)+'m':''):s.todayMin+'m';
+    document.getElementById('statToday').textContent=today;
+    document.getElementById('statStreak').textContent=s.streak;
+    document.getElementById('statTotal').textContent=s.total;
+    var strip=document.getElementById('statsStrip');
+    // Show only in idle/done (not during active compact/mini sessions)
+    var show=(phase==='idle'||phase==='done')&&s.total>0;
+    strip.classList.toggle('visible',show);
+  }
 
   function buildDots(){
     progressDots.innerHTML='';
@@ -536,7 +673,9 @@
   function updateTitle(){document.title=(phase==='idle'||phase==='done')?'Pomodoro Timer':fmt(timeLeft)+' — Pomodoro';}
 
   function applySettings(){
-    if(running)return;exitCompact();
+    if(running)return;
+    // Only request a panel resize if we're actually in compact/mini — avoids a spurious resize animation when already full.
+    if(document.body.classList.contains('compact')||document.body.classList.contains('mini'))exitCompact();
     var w=parseInt(document.getElementById('inputWork').value)||25,
       s=parseInt(document.getElementById('inputShort').value)||5,
       l=parseInt(document.getElementById('inputLong').value);
@@ -565,33 +704,129 @@
     document.getElementById('inputCycles').value=1;
     applySettings();
   }
+  function saveObsidianSettings(){
+    try{
+      localStorage.setItem('pomodoro_obsidian',JSON.stringify({
+        enabled:document.getElementById('obsidianEnabled').checked,
+        path:document.getElementById('obsidianPath').value.trim()
+      }));
+    }catch(e){console.warn('saveObsidianSettings failed',e);}
+  }
+  function loadObsidianSettings(){
+    try{
+      var s=JSON.parse(localStorage.getItem('pomodoro_obsidian')||'{}');
+      document.getElementById('obsidianEnabled').checked=!!s.enabled;
+      document.getElementById('obsidianPath').value=s.path||'';
+    }catch(e){console.warn('loadObsidianSettings failed',e);}
+  }
+  function expandObsidianPath(p){
+    if(!p)return '';
+    // {date} → YYYY-MM-DD (today)
+    return p.replace(/\{date\}/g,todayKey());
+  }
+  function appendToObsidian(content){
+    var en=document.getElementById('obsidianEnabled');
+    var pth=document.getElementById('obsidianPath');
+    if(!en||!en.checked)return;
+    var path=expandObsidianPath((pth&&pth.value||'').trim());
+    if(!path)return;
+    panelMsg('appendDailyNote',{path:path,content:content+'\n'});
+  }
+  // Swift callback hooks
+  function appendDailyNoteOk(){showNoteStatus('Appended to note');}
+  function appendDailyNoteFailed(msg){console.warn('appendDailyNote failed:',msg);showNoteStatus('Note append failed');}
+
+  // macOS Shortcuts (Focus / DND automation)
+  function saveShortcutSettings(){
+    try{
+      localStorage.setItem('pomodoro_shortcuts',JSON.stringify({
+        start:document.getElementById('shortcutStart').value.trim(),
+        end:document.getElementById('shortcutEnd').value.trim()
+      }));
+    }catch(e){console.warn('saveShortcutSettings failed',e);}
+  }
+  function loadShortcutSettings(){
+    try{
+      var s=JSON.parse(localStorage.getItem('pomodoro_shortcuts')||'{}');
+      document.getElementById('shortcutStart').value=s.start||'';
+      document.getElementById('shortcutEnd').value=s.end||'';
+    }catch(e){console.warn('loadShortcutSettings failed',e);}
+  }
+  function runShortcut(slot){
+    var el=document.getElementById(slot==='start'?'shortcutStart':'shortcutEnd');
+    var name=(el&&el.value||'').trim();
+    if(!name)return;
+    panelMsg('runShortcut',{name:name});
+  }
+
+  // Idle detection
+  function getIdleMinutes(){var v=parseInt(document.getElementById('idleMinutes').value);return isNaN(v)?0:Math.max(0,Math.min(30,v));}
+  function saveIdleSettings(){
+    var m=getIdleMinutes();
+    document.getElementById('idleMinutes').value=m;
+    try{localStorage.setItem('pomodoro_idle_min',String(m));}catch(e){console.warn('saveIdleSettings failed',e);}
+    panelMsg('setIdleThreshold',{seconds:m*60});
+  }
+  function loadIdleSettings(){
+    try{
+      var v=parseInt(localStorage.getItem('pomodoro_idle_min')||'0');
+      if(!isNaN(v))document.getElementById('idleMinutes').value=Math.max(0,Math.min(30,v));
+    }catch(e){console.warn('loadIdleSettings failed',e);}
+    panelMsg('setIdleThreshold',{seconds:getIdleMinutes()*60});
+  }
+  // Swift calls this when user has been idle >= threshold during a work session
+  function onIdleDetected(seconds){
+    if(!running||phase!=='work')return;
+    // Pause in place — reuse toggleStart's pause path
+    timeLeft=computeRemaining();
+    clearInterval(interval);running=false;
+    var b=controls.querySelector('.primary');if(b)b.textContent='Resume';
+    var mins=Math.round(seconds/60);
+    warningLabel.textContent='Paused — idle '+mins+' min';
+    warningLabel.classList.add('visible');
+    notify('Paused','No activity for '+mins+' min');
+  }
   function saveSettings(){try{localStorage.setItem('pomodoro_settings',JSON.stringify({work:WORK,short:SHORT,long:LONG,session:SESSION,longEvery:LONG_EVERY,cycles:CYCLES}));}catch(e){}}
   function loadSettings(){try{var s=JSON.parse(localStorage.getItem('pomodoro_settings'));if(!s)return;WORK=s.work||25*60;SHORT=s.short||5*60;LONG=(typeof s.long==='number')?s.long:15*60;SESSION=s.session||s.total||4;LONG_EVERY=s.longEvery||4;CYCLES=s.cycles||1;SESSION=Math.max(1,Math.min(20,SESSION));CYCLES=Math.max(1,Math.min(10,CYCLES));document.getElementById('inputWork').value=Math.round(WORK/60);document.getElementById('inputShort').value=Math.round(SHORT/60);document.getElementById('inputLong').value=Math.round(LONG/60);document.getElementById('inputSession').value=SESSION;document.getElementById('inputLongEvery').value=LONG_EVERY;document.getElementById('inputCycles').value=CYCLES;timeLeft=WORK;display.textContent=fmt(WORK);}catch(e){}}
 
   function toggleStart(){
-    if(phase==='idle'){startWork();return;}if(phase==='done')return;if(phase==='cycleBreak'&&!running){startNextCycle();return;}
-    if(running){clearInterval(interval);running=false;controls.querySelector('.primary').textContent='Resume';}
-    else{running=true;controls.querySelector('.primary').textContent='Pause';interval=setInterval(tick,1000);}
+    requestNotifications(); // ask once at first user gesture, not mid-session
+    if(phase==='idle'){startWork();return;}if(phase==='done')return;
+    if(running){
+      // Pause: snapshot remaining seconds, stop interval
+      timeLeft=computeRemaining();
+      clearInterval(interval);running=false;
+      controls.querySelector('.primary').textContent='Resume';
+    }else{
+      // Resume from paused (or from cycleBreak paused): re-anchor endAt to now+timeLeft
+      if(phase==='cycleBreak'&&timeLeft===0){startNextCycle();return;}
+      running=true;controls.querySelector('.primary').textContent='Pause';
+      startTicking(timeLeft);
+    }
   }
   function startWork(skipSound){
-    phase='work';timeLeft=WORK;running=true;warningShown=false;reflectionShown=false;noteSubmittedThisPomodoro=false;
+    phase='work';running=true;warningShown=false;reflectionShown=false;noteSubmittedThisPomodoro=false;
     document.body.className='work';pLabel.textContent='Work';
-    updateDots();display.textContent=fmt(timeLeft);
+    updateDots();display.textContent=fmt(WORK);
     warningLabel.classList.remove('visible');warningLabel.textContent='';
     reflectionPanel.classList.remove('visible');noteSavedBadge.classList.remove('visible');
     reflectionTitle.value='';reflectionText.value='';settingsPanel.style.display='';
-    renderControls('Pause');clearInterval(interval);interval=setInterval(tick,1000);
-    updateDots();updateTitle();if(!skipSound)playTransitionSound();requestNotifications();
-    enterCompact();
+    // Pre-fill per-pomodoro objective with cycle-wide default
+    document.getElementById('pomodoroObjective').value=getObjective()==='No objective set'?'':getObjective();
+    renderControls('Pause');startTicking(WORK);
+    updateDots();updateTitle();if(!skipSound)playTransitionSound();
+    enterCompact();renderStats();
+    runShortcut('start');
   }
   function startBreak(isLong){
     exitCompact();
-    phase=isLong?'longBreak':'shortBreak';timeLeft=isLong?LONG:SHORT;running=true;
+    phase=isLong?'longBreak':'shortBreak';running=true;
+    var dur=isLong?LONG:SHORT;
     document.body.className='break';pLabel.textContent=isLong?'Long Break':'Short Break';
-    display.textContent=fmt(timeLeft);warningLabel.classList.remove('visible');warningLabel.textContent='';
+    display.textContent=fmt(dur);warningLabel.classList.remove('visible');warningLabel.textContent='';
     reflectionPanel.classList.remove('visible');noteSavedBadge.classList.remove('visible');
     settingsPanel.style.display='';renderControls('Pause');
-    clearInterval(interval);interval=setInterval(tick,1000);updateTitle();
+    startTicking(dur);updateTitle();
   }
   function showReflectionPanel(){
     reflectionShown=true;reflectionTitle.value='';reflectionText.value='';
@@ -600,29 +835,41 @@
     reflectionPanel.classList.add('visible');reflectionTitle.focus();
   }
   function noteMatches(n){return n.cycle===currentCycle&&n.session===count+1;}
+  function getCurrentObjective(){
+    var el=document.getElementById('pomodoroObjective');
+    var v=(el&&el.value||'').trim();
+    return v||getObjective();
+  }
   function submitReflection(){
-    var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
+    var title=reflectionTitle.value.trim(),text=reflectionText.value.trim(),obj=getCurrentObjective();
     if(!text&&!title){showNoteStatus('Write something first');return;}
     if(noteSubmittedThisPomodoro){
-      for(var i=currentCycleNotes.length-1;i>=0;i--){if(noteMatches(currentCycleNotes[i])){currentCycleNotes[i].title=title;currentCycleNotes[i].text=text;currentCycleNotes[i].time=formatTime();break;}}
+      for(var i=currentCycleNotes.length-1;i>=0;i--){if(noteMatches(currentCycleNotes[i])){currentCycleNotes[i].title=title;currentCycleNotes[i].text=text;currentCycleNotes[i].objective=obj;currentCycleNotes[i].time=formatTime();break;}}
       showNoteStatus('Note updated');
     }else{
-      currentCycleNotes.push({session:count+1,cycle:currentCycle,title:title,text:text,time:formatTime()});
+      currentCycleNotes.push({session:count+1,cycle:currentCycle,title:title,text:text,objective:obj,time:formatTime()});
       noteSubmittedThisPomodoro=true;showNoteStatus('Note saved');
     }
     noteSavedBadge.classList.add('visible');
   }
   function autoSaveReflection(){
-    var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
+    var title=reflectionTitle.value.trim(),text=reflectionText.value.trim(),obj=getCurrentObjective();
     if((text||title)&&!noteSubmittedThisPomodoro){
-      currentCycleNotes.push({session:count+1,cycle:currentCycle,title:title,text:text,time:formatTime()});noteSubmittedThisPomodoro=true;
+      currentCycleNotes.push({session:count+1,cycle:currentCycle,title:title,text:text,objective:obj,time:formatTime()});noteSubmittedThisPomodoro=true;
     }else if((text||title)&&noteSubmittedThisPomodoro){
-      for(var i=currentCycleNotes.length-1;i>=0;i--){if(noteMatches(currentCycleNotes[i])){currentCycleNotes[i].title=title;currentCycleNotes[i].text=text;currentCycleNotes[i].time=formatTime();break;}}
+      for(var i=currentCycleNotes.length-1;i>=0;i--){if(noteMatches(currentCycleNotes[i])){currentCycleNotes[i].title=title;currentCycleNotes[i].text=text;currentCycleNotes[i].objective=obj;currentCycleNotes[i].time=formatTime();break;}}
+    }else if(!noteSubmittedThisPomodoro){
+      // Objective-only record so the history still credits this pomodoro's intent
+      currentCycleNotes.push({session:count+1,cycle:currentCycle,title:'',text:'',objective:obj,time:formatTime()});noteSubmittedThisPomodoro=true;
     }
   }
   function tick(){
-    timeLeft--;display.textContent=fmt(timeLeft);updateTitle();
-    if(phase==='work'&&timeLeft===120&&!reflectionShown){
+    if(!running)return;
+    var prev=timeLeft;
+    timeLeft=computeRemaining();
+    if(timeLeft===prev)return; // sub-second tick, nothing changed
+    display.textContent=fmt(timeLeft);updateTitle();
+    if(phase==='work'&&timeLeft<=120&&!reflectionShown&&timeLeft>0){
       expandFull();
       playWarningSound();display.classList.add('pulse');
       warningLabel.textContent='2 min — reflect';warningLabel.classList.add('visible');
@@ -635,6 +882,8 @@
       autoSaveReflection();reflectionPanel.classList.remove('visible');
       warningLabel.classList.remove('visible');warningLabel.textContent='';
       count++;updateDots();playSessionEndSound();
+      recordPomodoro(currentCycleNotes[currentCycleNotes.length-1]);
+      runShortcut('end');
       notify('Session '+count+' of '+SESSION+(CYCLES>1?' (cycle '+(currentCycle+1)+')':'')+' done');
       advanceAfterWork();
     }else if(phase==='cycleBreak'){
@@ -656,6 +905,7 @@
     noteSavedBadge.classList.remove('visible');warningLabel.classList.remove('visible');
     warningLabel.textContent='';reflectionShown=false;noteSubmittedThisPomodoro=false;
     if(phase==='shortBreak')timeLeft=SHORT;else if(phase==='longBreak')timeLeft=LONG;else if(phase==='cycleBreak')timeLeft=LONG>0?LONG:SHORT;else timeLeft=WORK;
+    endAt=0;
     display.textContent=fmt(timeLeft);renderControls('Start');updateTitle();
   }
   function advanceAfterWork(){
@@ -670,7 +920,7 @@
   }
   function skipPhase(){
     clearInterval(interval);running=false;
-    if(phase==='work'){autoSaveReflection();reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');count++;updateDots();playSessionEndSound();advanceAfterWork();}
+    if(phase==='work'){autoSaveReflection();reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');count++;updateDots();playSessionEndSound();runShortcut('end');advanceAfterWork();}
     else if(phase==='cycleBreak'){startNextCycle();}
     else if(phase==='shortBreak'||phase==='longBreak'){exitCompact();phase='idle';timeLeft=WORK;document.body.className='';pLabel.textContent='Ready';updateDots();display.textContent=fmt(WORK);renderControls('Start');updateTitle();}
     else startWork();
@@ -679,14 +929,15 @@
     exitCompact();
     phase='cycleBreak';document.body.className='done';
     pLabel.textContent='Cycle '+currentCycle+' done';
-    timeLeft=LONG>0?LONG:SHORT;display.textContent=fmt(timeLeft);running=true;
+    var dur=LONG>0?LONG:SHORT;display.textContent=fmt(dur);running=true;
     doneMsg.textContent='Cycle '+currentCycle+' of '+CYCLES+' complete. Take a break.';
     doneMsg.classList.add('visible');reflectionPanel.classList.remove('visible');settingsPanel.style.display='';
     if(currentCycleNotes.length>0){var html='';currentCycleNotes.forEach(function(n){var h=n.title||('Session '+n.session);html+='<div class="summary-item"><strong>'+escapeHtml(h)+'</strong> ('+n.time+')<br>'+escapeHtml(n.text)+'</div>';});summaryContent.innerHTML=html;summaryEl.classList.add('visible');}
     else{summaryContent.innerHTML='';summaryEl.classList.remove('visible');}
     controls.innerHTML='<button class="primary" onclick="startNextCycle()">Continue</button><button class="secondary" onclick="copyCycleNotes()">Copy Notes</button>';
-    clearInterval(interval);interval=setInterval(tick,1000);updateTitle();
+    startTicking(dur);updateTitle();
     celebrationBells();
+    if(currentCycleNotes.length>0)appendToObsidian(generateCycleMarkdown());
     notify('Cycle Complete','Cycle '+currentCycle+' of '+CYCLES+' done.');
     requestAnimationFrame(function(){panelMsg('sessionDone',{height:document.documentElement.scrollHeight});});
   }
@@ -709,7 +960,9 @@
       summaryContent.innerHTML=html;summaryEl.classList.add('visible');
     }
     controls.innerHTML='<button class="primary" onclick="copyAllNotes()">Copy All</button><button class="secondary" onclick="restart()">Again</button>';
-    updateTitle();celebrationBells();
+    updateTitle();celebrationBells();renderStats();
+    // Single-cycle runs didn't hit showCycleBreak, so append here instead
+    if(CYCLES===1&&flat.length>0)appendToObsidian(generateAllMarkdown());
     notify('Session Complete!',CYCLES>1?'All '+CYCLES+' cycles done.':'All '+SESSION+' sessions done. Well done!');
     requestAnimationFrame(function(){panelMsg('sessionDone',{height:document.documentElement.scrollHeight});});
   }
@@ -721,13 +974,13 @@
     pLabel.textContent='Ready';display.textContent=fmt(WORK);doneMsg.classList.remove('visible');summaryEl.classList.remove('visible');
     reflectionPanel.classList.remove('visible');warningLabel.classList.remove('visible');
     warningLabel.textContent='';noteSavedBadge.classList.remove('visible');
-    renderControls('Start');buildDots();updateTitle();
+    renderControls('Start');buildDots();updateTitle();renderStats();
   }
   function renderControls(l){controls.innerHTML='<button class="primary" onclick="toggleStart()">'+l+'</button><button class="secondary" onclick="resetBlock()">Reset</button><button class="secondary" onclick="skipPhase()">Skip</button>';}
 
   function escapeHtml(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
   function getObjective(){return document.getElementById('inputObjective').value.trim()||'No objective set';}
-  function generateSingleMarkdown(n){var h=n.title||('Session '+n.session);return'## '+h+' — '+formatDate()+' '+n.time+'\n**Objective:** '+getObjective()+'\n\n'+n.text+'\n';}
+  function generateSingleMarkdown(n){var h=n.title||('Session '+n.session);return'## '+h+' — '+formatDate()+' '+n.time+'\n**Objective:** '+(n.objective||getObjective())+'\n\n'+n.text+'\n';}
   function generateAllMarkdown(){
     var wmin=Math.round(WORK/60),total=SESSION*CYCLES;
     var md='# Pomodoro Session — '+formatDate()+'\n**Objective:** '+getObjective()+'\n**Duration:** '+(total*wmin)+' min ('+total+' x '+wmin+' min)\n\n';
@@ -742,26 +995,46 @@
     return md.trim()+'\n';
   }
   function copyCurrentNote(){
-    var title=reflectionTitle.value.trim(),text=reflectionText.value.trim();
+    var title=reflectionTitle.value.trim(),text=reflectionText.value.trim(),obj=getCurrentObjective();
     if(!text){showNoteStatus('Nothing to copy');return;}
-    var md=generateSingleMarkdown({session:count+1,cycle:currentCycle,title:title,text:text,time:formatTime()});
-    navigator.clipboard.writeText(md).then(function(){showNoteStatus('Copied');}).catch(function(){showNoteStatus('Could not copy');});
+    var md=generateSingleMarkdown({session:count+1,cycle:currentCycle,title:title,text:text,objective:obj,time:formatTime()});
+    navigator.clipboard.writeText(md).then(function(){showNoteStatus('Copied');}).catch(function(e){console.warn('copyCurrentNote failed',e);showNoteStatus('Could not copy');});
+  }
+  function flashButton(selector,successLabel,originalLabel){
+    var b=controls.querySelector(selector);
+    if(!b)return;
+    b.textContent=successLabel;
+    setTimeout(function(){b.textContent=originalLabel;},2000);
   }
   function copyCycleNotes(){
     if(currentCycleNotes.length===0)return;
-    navigator.clipboard.writeText(generateCycleMarkdown()).then(function(){var b=controls.querySelector('.secondary');if(b){b.textContent='Copied';setTimeout(function(){b.textContent='Copy Notes';},2000);}}).catch(function(){});
+    navigator.clipboard.writeText(generateCycleMarkdown())
+      .then(function(){flashButton('.secondary','Copied','Copy Notes');})
+      .catch(function(e){console.warn('copyCycleNotes failed',e);flashButton('.secondary','Copy failed','Copy Notes');});
   }
   function copyAllNotes(){
     var flat=[];allNotes.forEach(function(cy){flat=flat.concat(cy);});
     if(flat.length===0)return;
-    navigator.clipboard.writeText(generateAllMarkdown()).then(function(){var b=controls.querySelector('.primary');if(b){b.textContent='Copied';setTimeout(function(){b.textContent='Copy All';},2000);}}).catch(function(){});
+    navigator.clipboard.writeText(generateAllMarkdown())
+      .then(function(){flashButton('.primary','Copied','Copy All');})
+      .catch(function(e){console.warn('copyAllNotes failed',e);flashButton('.primary','Copy failed','Copy All');});
   }
   function showNoteStatus(m){notesStatus.textContent=m;notesStatus.classList.add('visible');setTimeout(function(){notesStatus.classList.remove('visible');},2500);}
 
-  function toggleMute(){muted=!muted;document.getElementById('muteBtn').textContent=muted?'Sound Off':'Sound On';try{localStorage.setItem('pomodoro_muted',muted?'1':'0');}catch(e){}}
-  function loadMute(){try{muted=localStorage.getItem('pomodoro_muted')==='1';document.getElementById('muteBtn').textContent=muted?'Sound Off':'Sound On';}catch(e){}}
-  function toggleFunnyMode(){funnyMode=!funnyMode;var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);try{localStorage.setItem('pomodoro_funny',funnyMode?'1':'0');}catch(e){}renderFunnySoundsPanel();}
-  function loadFunnyMode(){try{funnyMode=localStorage.getItem('pomodoro_funny')==='1';var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);}catch(e){}}
+  function toggleAdvanced(){
+    var p=document.getElementById('advancedPanel');
+    if(!p)return;
+    var opening=!p.classList.contains('visible');
+    p.classList.toggle('visible',opening);
+    if(opening){
+      var first=p.querySelector('input,button');
+      if(first&&first!==null)setTimeout(function(){try{first.focus();}catch(e){}},50);
+    }
+  }
+  function toggleMute(){muted=!muted;var b=document.getElementById('muteBtn');b.textContent=muted?'Sound Off':'Sound On';b.setAttribute('aria-pressed',muted?'true':'false');try{localStorage.setItem('pomodoro_muted',muted?'1':'0');}catch(e){}}
+  function loadMute(){try{muted=localStorage.getItem('pomodoro_muted')==='1';var b=document.getElementById('muteBtn');b.textContent=muted?'Sound Off':'Sound On';b.setAttribute('aria-pressed',muted?'true':'false');}catch(e){}}
+  function toggleFunnyMode(){funnyMode=!funnyMode;var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);b.setAttribute('aria-pressed',funnyMode?'true':'false');try{localStorage.setItem('pomodoro_funny',funnyMode?'1':'0');}catch(e){}renderFunnySoundsPanel();}
+  function loadFunnyMode(){try{funnyMode=localStorage.getItem('pomodoro_funny')==='1';var b=document.getElementById('funnyBtn');b.textContent=funnyMode?'Funny On':'Funny Mode';b.classList.toggle('active',funnyMode);b.setAttribute('aria-pressed',funnyMode?'true':'false');}catch(e){}}
 
   function renderFunnySoundsPanel(){
     var panel=document.getElementById('funnySoundsPanel');
@@ -790,14 +1063,18 @@
   }
   function previewSound(slot){
     if(!customSoundCache[slot])return;
-    try{if(previewAudio)previewAudio.pause();previewAudio=new Audio(customSoundCache[slot].objectURL);previewAudio.play().catch(function(){});}catch(e){}
+    try{
+      if(previewAudio)previewAudio.pause();
+      previewAudio=new Audio(customSoundCache[slot].objectURL);
+      previewAudio.play().catch(function(e){console.warn('previewSound play() rejected',slot,e);});
+    }catch(e){console.warn('previewSound failed',slot,e);}
   }
   function removeSound(slot){
     removeCustomSoundDB(slot).then(function(){
       if(customSoundCache[slot]&&customSoundCache[slot].objectURL)URL.revokeObjectURL(customSoundCache[slot].objectURL);
       customSoundCache[slot]=null;
       renderFunnySoundsPanel();
-    }).catch(function(){});
+    }).catch(function(e){console.warn('removeSound DB delete failed',slot,e);showSoundError(slot,'Remove failed');});
   }
   function showSoundError(slot,msg){
     var row=document.querySelector('[data-slot="'+slot+'"]');
@@ -806,11 +1083,36 @@
     setTimeout(function(){el.remove();},3000);
   }
 
-  document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){
+      var p=document.getElementById('advancedPanel');
+      if(p&&p.classList.contains('visible')){p.classList.remove('visible');e.preventDefault();return;}
+    }
+    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+    if(e.code==='Space'){e.preventDefault();toggleStart();}else if(e.key==='r'||e.key==='R')resetBlock();else if(e.key==='s'||e.key==='S')skipPhase();
+  });
+
+  // Select the value on focus for number inputs so typing immediately replaces it.
+  Array.prototype.forEach.call(document.querySelectorAll('.setting-field input[type="number"]'),function(inp){
+    inp.addEventListener('focus',function(){inp.select();});
+  });
+
+  // Reconcile timer when the page is re-shown (sleep/background throttles setInterval on macOS)
+  document.addEventListener('visibilitychange',function(){if(!document.hidden&&running&&endAt>0)tick();});
+
+  // Revoke blob object URLs for custom sounds on unload — prevents GC retention across reloads.
+  window.addEventListener('pagehide',function(){
+    Object.keys(customSoundCache).forEach(function(slot){
+      var entry=customSoundCache[slot];
+      if(entry&&entry.objectURL){URL.revokeObjectURL(entry.objectURL);entry.objectURL=null;}
+    });
+  });
 
   // Update checker
-  var APP_VERSION='0.3.6';
+  var APP_VERSION='0.4.0';
   var GITHUB_REPO='akasatrio/reflection-pomodoro-timer';
+  var pendingUpdateTag=null; // validated tag to pass to the native updater
+  var SEMVER_RE=/^v?\d{1,3}\.\d{1,3}\.\d{1,3}$/;
   function compareVersions(a,b){
     var pa=a.replace(/^v/,'').split('.').map(Number),pb=b.replace(/^v/,'').split('.').map(Number);
     for(var i=0;i<3;i++){if((pa[i]||0)>(pb[i]||0))return 1;if((pa[i]||0)<(pb[i]||0))return -1;}return 0;
@@ -819,7 +1121,9 @@
     fetch('https://api.github.com/repos/'+GITHUB_REPO+'/releases/latest')
       .then(function(r){return r.json();})
       .then(function(data){
-        if(data.tag_name&&compareVersions(data.tag_name,APP_VERSION)>0){
+        if(!data.tag_name||!SEMVER_RE.test(data.tag_name))return;
+        if(compareVersions(data.tag_name,APP_VERSION)>0){
+          pendingUpdateTag=data.tag_name;
           var banner=document.getElementById('updateBanner');
           document.getElementById('updateVersion').textContent=data.tag_name;
           banner.classList.add('visible');
@@ -827,10 +1131,11 @@
       }).catch(function(){});
   }
   function applyUpdate(){
+    if(!pendingUpdateTag||!SEMVER_RE.test(pendingUpdateTag)){updateFailed('No valid release tag');return;}
     var banner=document.getElementById('updateBanner');
     banner.classList.add('updating');
     banner.textContent='Downloading and building update\u2026';
-    panelMsg('updateApp');
+    panelMsg('updateApp',{tag:pendingUpdateTag});
   }
   function updateFailed(msg){
     var banner=document.getElementById('updateBanner');
@@ -846,8 +1151,9 @@
   checkForUpdate();
   setInterval(checkForUpdate,30*60*1000);
 
-  loadSettings();loadMute();loadFunnyMode();buildDots();display.textContent=fmt(WORK);updateTitle();
+  loadSettings();loadMute();loadFunnyMode();loadObsidianSettings();loadShortcutSettings();loadIdleSettings();buildDots();display.textContent=fmt(WORK);updateTitle();
   loadAllCustomSounds().then(function(){renderFunnySoundsPanel();});
+  renderStats();
 </script>
 </body>
 </html>
