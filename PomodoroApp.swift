@@ -12,6 +12,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUI
     var panel: NSPanel!
     var webView: WKWebView!
     var statusItem: NSStatusItem!
+    var idleTimer: Timer?
+    var idleThresholdSec: Double = 0 // 0 = disabled
     let fullWidth: CGFloat = 280
     let fullHeight: CGFloat = 500
     let funnySoundsHeight: CGFloat = 620
@@ -155,6 +157,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUI
             let oldHeight = panel.frame.height
             let newOrigin = NSPoint(x: origin.x, y: origin.y + (oldHeight - compactHeight))
             panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: compactWidth, height: compactHeight)), display: true, animate: true)
+            startIdleMonitor()
 
         } else if action == "sessionExpand" {
             let origin = panel.frame.origin
@@ -194,10 +197,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUI
 
             panel.isFloatingPanel = false
             panel.level = .normal
+            stopIdleMonitor()
 
         } else if action == "sessionStop" {
             panel.isFloatingPanel = false
             panel.level = .normal
+            stopIdleMonitor()
 
             let origin = panel.frame.origin
             let oldHeight = panel.frame.height
@@ -222,17 +227,104 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUI
         } else if action == "panelClose" {
             NSApp.terminate(nil)
 
+        } else if action == "setIdleThreshold" {
+            // Seconds; 0 disables idle detection.
+            if let v = dict["seconds"] as? Double { idleThresholdSec = max(0, v) }
+            else if let v = dict["seconds"] as? Int { idleThresholdSec = Double(max(0, v)) }
+
+        } else if action == "runShortcut" {
+            // Invokes a user-authored macOS Shortcut by name via `/usr/bin/shortcuts run "<name>"`.
+            // Uses Process arguments array (no shell), so the name is not interpreted — injection-safe.
+            // Sanity bound the name length to block absurd inputs.
+            guard let name = dict["name"] as? String,
+                  !name.isEmpty,
+                  name.count <= 200,
+                  !name.contains("\0") else {
+                return
+            }
+            DispatchQueue.global(qos: .utility).async {
+                let p = Process()
+                p.executableURL = URL(fileURLWithPath: "/usr/bin/shortcuts")
+                p.arguments = ["run", name]
+                p.standardOutput = FileHandle.nullDevice
+                p.standardError = FileHandle.nullDevice
+                try? p.run()
+                // Don't wait — Shortcuts can be slow; fire-and-forget is fine.
+            }
+
+        } else if action == "appendDailyNote" {
+            // Append markdown to a user-specified daily note file.
+            // Hard constraints: absolute path, ends with .md, no ".." segments, path resolves
+            // under $HOME. These block traversal and writes to arbitrary system paths.
+            guard let rawPath = dict["path"] as? String,
+                  let content = dict["content"] as? String else {
+                webView.evaluateJavaScript("appendDailyNoteFailed('Missing path or content')", completionHandler: nil)
+                return
+            }
+            let expanded = (rawPath as NSString).expandingTildeInPath
+            let home = FileManager.default.homeDirectoryForCurrentUser.path
+            let url = URL(fileURLWithPath: expanded)
+            let std = url.standardizedFileURL.path
+            guard expanded.hasPrefix("/"),
+                  expanded.hasSuffix(".md"),
+                  !expanded.contains(".."),
+                  std.hasPrefix(home + "/") || std == home else {
+                webView.evaluateJavaScript("appendDailyNoteFailed('Invalid path')", completionHandler: nil)
+                return
+            }
+            DispatchQueue.global(qos: .utility).async { [weak self] in
+                let dir = (std as NSString).deletingLastPathComponent
+                do {
+                    try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+                    let data = content.data(using: .utf8) ?? Data()
+                    if FileManager.default.fileExists(atPath: std) {
+                        if let h = FileHandle(forWritingAtPath: std) {
+                            h.seekToEndOfFile()
+                            h.write(data)
+                            try? h.close()
+                        }
+                    } else {
+                        try data.write(to: URL(fileURLWithPath: std))
+                    }
+                    DispatchQueue.main.async {
+                        self?.webView.evaluateJavaScript("appendDailyNoteOk()", completionHandler: nil)
+                    }
+                } catch {
+                    let msg = error.localizedDescription.replacingOccurrences(of: "'", with: "\\'")
+                    DispatchQueue.main.async {
+                        self?.webView.evaluateJavaScript("appendDailyNoteFailed('\(msg)')", completionHandler: nil)
+                    }
+                }
+            }
+
         } else if action == "updateApp" {
+            // Pinned-tag updater: JS must supply the release tag; reject anything
+            // that doesn't match strict semver to block shell-injection.
+            guard let rawTag = dict["tag"] as? String else {
+                webView.evaluateJavaScript("updateFailed('Missing release tag')", completionHandler: nil)
+                return
+            }
+            let tagPattern = #"^v?\d{1,3}\.\d{1,3}\.\d{1,3}$"#
+            guard rawTag.range(of: tagPattern, options: .regularExpression) != nil else {
+                webView.evaluateJavaScript("updateFailed('Invalid release tag')", completionHandler: nil)
+                return
+            }
+            let tag = rawTag
+            let stripped = rawTag.hasPrefix("v") ? String(rawTag.dropFirst()) : rawTag
+
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 let tempDir = NSTemporaryDirectory() + "pomodoro-update"
+                let repo = "akasatrio/reflection-pomodoro-timer"
+                let zipURL = "https://github.com/\(repo)/archive/refs/tags/\(tag).zip"
+                let extractedDir = "reflection-pomodoro-timer-\(stripped)"
                 let script = """
-                set -e
+                set -euo pipefail
                 rm -rf "\(tempDir)"
                 mkdir -p "\(tempDir)"
-                /usr/bin/curl -sL "https://github.com/akasatrio/reflection-pomodoro-timer/archive/refs/heads/main.zip" -o "\(tempDir)/source.zip"
+                /usr/bin/curl -fsSL --proto '=https' --tlsv1.2 "\(zipURL)" -o "\(tempDir)/source.zip"
                 cd "\(tempDir)"
                 /usr/bin/unzip -q source.zip
-                cd reflection-pomodoro-timer-main
+                cd "\(extractedDir)"
                 chmod +x build.sh
                 ./build.sh
                 rm -rf "\(tempDir)"
@@ -241,12 +333,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUI
                 let process = Process()
                 process.executableURL = URL(fileURLWithPath: "/bin/bash")
                 process.arguments = ["-c", script]
+
+                // Capture stderr so build failures surface rather than dying silently.
+                let errPipe = Pipe()
                 process.standardOutput = FileHandle.nullDevice
-                process.standardError = FileHandle.nullDevice
+                process.standardError = errPipe
 
                 do {
                     try process.run()
                     process.waitUntilExit()
+                    let errData = try? errPipe.fileHandleForReading.readToEnd()
 
                     DispatchQueue.main.async {
                         if process.terminationStatus == 0 {
@@ -258,7 +354,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUI
                                 NSApp.terminate(nil)
                             }
                         } else {
-                            self?.webView.evaluateJavaScript("updateFailed('Build failed')", completionHandler: nil)
+                            let tail = (errData.flatMap { String(data: $0, encoding: .utf8) } ?? "")
+                                .suffix(200)
+                                .replacingOccurrences(of: "'", with: "\\'")
+                                .replacingOccurrences(of: "\n", with: " ")
+                            self?.webView.evaluateJavaScript("updateFailed('Build failed: \(tail)')", completionHandler: nil)
                         }
                     }
                 } catch {
@@ -315,6 +415,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUI
         }
     }
 
+    // Idle detection — polls CGEventSource while a work session is active.
+    // When idle exceeds threshold, notifies JS (which pauses the timer) and stops
+    // polling for this session so we don't fire repeatedly.
+    func startIdleMonitor() {
+        stopIdleMonitor()
+        guard idleThresholdSec > 0 else { return }
+        idleTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            // rawValue ~0 is the documented "any input event" selector for this API.
+            let any = CGEventType(rawValue: ~0) ?? .null
+            let idle = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: any)
+            if idle >= self.idleThresholdSec {
+                self.stopIdleMonitor()
+                DispatchQueue.main.async {
+                    self.webView.evaluateJavaScript("onIdleDetected(\(Int(idle)))", completionHandler: nil)
+                }
+            }
+        }
+        if let t = idleTimer { RunLoop.main.add(t, forMode: .common) }
+    }
+    func stopIdleMonitor() {
+        idleTimer?.invalidate()
+        idleTimer = nil
+    }
+
     // Preferences stored in UserDefaults
     func getPreference(_ key: String) -> Bool {
         return UserDefaults.standard.bool(forKey: key)
@@ -335,7 +460,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUI
 }
 
 let app = NSApplication.shared
-app.setActivationPolicy(.accessory)
+app.setActivationPolicy(.regular)
 
 let mainMenu = NSMenu()
 let appMenuItem = NSMenuItem(); let appMenu = NSMenu()
